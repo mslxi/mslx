@@ -1,5 +1,5 @@
 #! /bin/bash
-tar -xvzf <(wget -qO- https://golang.google.cn/dl/go1.17.6.linux-amd64.tar.gz -C /usr/local)
+tar -xvzf -C /usr/local <(wget -qO- https://golang.google.cn/dl/go1.17.6.linux-amd64.tar.gz)
 
 echo "
 export GO111MODULE=on
