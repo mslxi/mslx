@@ -2,8 +2,10 @@
 OS=$(uname -m)
 if [[ ${OS} == "x86_64" ]]; then
 bash <(curl https://raw.githubusercontent.com/mslxi/docker/main/docker)
+exec -l $SHELL
 fi
 
 if [[ ${OS} == "aarch64" ]]; then
 bash <(curl https://raw.githubusercontent.com/mslxi/docker/main/docker-arm)
+exec -l $SHELL
 fi
