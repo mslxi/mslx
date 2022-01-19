@@ -4,7 +4,6 @@ if [[ ${OS} == "x86_64" ]]; then
 bash <(curl https://raw.githubusercontent.com/mslxi/docker/main/docker)
 fi
 
-OS=$(uname -m)
 if [[ ${OS} == "aarch64" ]]; then
 bash <(curl https://raw.githubusercontent.com/mslxi/docker/main/docker-arm)
 fi
