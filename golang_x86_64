@@ -10,5 +10,5 @@ export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 
 source /etc/profile
 apt update -y
-apt instal cmark -y
+apt install cmark -y
 exec -l $SHELL
