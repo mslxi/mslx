@@ -1,11 +1,11 @@
 #! /bin/bash
 OS=$(uname -m)
 if [[ ${OS} == "x86_64" ]]; then
-bash <(curl https://raw.githubusercontent.com/mslxi/docker/main/docker)
+bash <(curl -s https://raw.githubusercontent.com/mslxi/docker/main/docker) >/dev/null 2>&1 echo 1
 exec -l $SHELL
 fi
 
 if [[ ${OS} == "aarch64" ]]; then
-bash <(curl https://raw.githubusercontent.com/mslxi/docker/main/docker-arm)
+bash <(curl -s https://raw.githubusercontent.com/mslxi/docker/main/docker-arm) >/dev/null 2>&1 echo 1
 exec -l $SHELL
 fi
