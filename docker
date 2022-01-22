@@ -1,14 +1,14 @@
 #! /bin/bash
 OS=$(uname -m)
 if [[ ${OS} == "x86_64" ]]; then
-echo '正在安装docker,docker-compose,bash-completion'
+echo '正在安装docker,docker-compose,bash-completion,请等待'
 bash <(curl -s https://raw.githubusercontent.com/mslxi/docker/main/docker) >/dev/null 2>&1
 echo '安装成功！请执行docker -v与docker-compose -v查看是否安装成功'
 exec -l $SHELL
 fi
 
 if [[ ${OS} == "aarch64" ]]; then
-echo '正在安装docker,docker-compose,bash-completion'
+echo '正在安装docker,docker-compose,bash-completion,请等待'
 bash <(curl -s https://raw.githubusercontent.com/mslxi/docker/main/docker-arm) >/dev/null 2>&1
 echo '安装成功！请执行docker -v与docker-compose -v查看是否安装成功'
 exec -l $SHELL
