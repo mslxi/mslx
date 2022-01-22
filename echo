@@ -1,0 +1,3 @@
+#!/bin/bash
+echo '正在安装speedtest'
+bash <(curl https://install.speedtest.net/app/cli/install.deb.sh) >/dev/null 2>&1 echo '1'
