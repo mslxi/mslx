@@ -4,4 +4,4 @@ bash <(curl -s https://install.speedtest.net/app/cli/install.deb.sh) >/dev/null 
 apt install speedtest -y >/dev/null
 echo '安装成功，开始测速'
 speedtest
-echo '测速完成，再次测速请执行speedtest‘
+echo '测速完成，再次测速请执行speedtest'
