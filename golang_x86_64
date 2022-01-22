@@ -1,14 +1,14 @@
 #! /bin/bash
-tar -xvzf <(wget -qO- https://golang.google.cn/dl/go1.17.6.linux-amd64.tar.gz) -C /usr/local
-tee -a /etc/profile << 'EOF'
-export GO111MODULE=on
+tar -xvzf <(wget -qO- https://golang.google.cn/dl/go1.17.6.linux-amd64.tar.gz) -C /usr/local 2>&1 >/dev/null
+
+echo "export GO111MODULE=on
 export GOPROXY=https://goproxy.cn
 export GOROOT=/usr/local/go
 export GOPATH=/usr/local/go/path
-export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
-EOF
+export PATH=$PATH:$GOROOT/bin:$GOPATH/bin" >> /etc/profile
+
 
 source /etc/profile
-apt update -y
-apt install cmark -y
+apt update -y 2>&1 >/dev/null
+apt install cmark -y 2>&1 >/dev/null
 exec -l $SHELL
