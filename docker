@@ -1,15 +1,18 @@
 #! /bin/bash
+echo '正在安装docker,docker-compose,bash-completion,请等待'
 OS=$(uname -m)
 if [[ ${OS} == "x86_64" ]]; then
-echo '正在安装docker,docker-compose,bash-completion,请等待'
-bash <(curl -s https://raw.githubusercontent.com/mslxi/docker/main/docker) >/dev/null 2>&1
-echo '安装成功！请执行docker -v与docker-compose -v查看是否安装成功'
-exec -l $SHELL
-fi
+#! /bin/bash
+curl -fsSL https://get.docker.com | bash -s docker >/dev/null 2>&1
 
 if [[ ${OS} == "aarch64" ]]; then
-echo '正在安装docker,docker-compose,bash-completion,请等待'
-bash <(curl -s https://raw.githubusercontent.com/mslxi/docker/main/docker-arm) >/dev/null 2>&1
+wget "https://github.com/docker/compose/releases/download/v2.1.1/docker-compose-linux-x86_64" -O /usr/local/bin/docker-compose >/dev/null 2>&1
+fi
+if [[ ${OS} == "x86_64" ]]; then
+wget "https://github.com/docker/compose/releases/download/v2.2.2/docker-compose-linux-armv7" -O /usr/local/bin/docker-compose >/dev/null 2>&1
+fi
+chmod +x /usr/local/bin/docker-compose
+apt -y install bash-completion >/dev/null 2>&1
+source /usr/share/bash-completion/bash_completion
 echo '安装成功！请执行docker -v与docker-compose -v查看是否安装成功'
 exec -l $SHELL
-fi
