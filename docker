@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 echo '正在安装docker,docker-compose,bash-completion,请等待'
 OS=$(uname -m)
 curl -fsSL https://get.docker.com | bash -s docker >/dev/null 2>&1
