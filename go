@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 echo '开始安装go环境，请等待'
 
 OS=$(uname -m)
