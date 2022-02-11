@@ -1,0 +1,22 @@
+#!/bin/bash
+echo '
+#!/bin/sh
+
+IP="$(echo $SSH_CONNECTION | cut -d " " -f 1)"
+LOCALHOST=$(curl -s ip.sb)
+NOW=$(date "+%Y-%m-%d %H:%M:%S")
+HOSTNAME=$(hostname)
+
+CONTENT="[SSH登录通知]
+用户 $IP 通过ssh登录了机器
+机器IP:$LOCALHOST
+机器名称:$(hostname)
+时间:$NOW."
+
+RES=$(curl -X POST \
+  -F "chat_id=5255400704" \
+  -F "text=${CONTENT}" \
+  -o /dev/null --silent \
+  -w %{http_code} \
+  "https://api.telegram.org/bot5180874965:AAGOiyhUOlY4_PIF6eO_ZRkQJgU5t9J2R-g/sendMessage")
+'>/etc/ssh/sshrc
