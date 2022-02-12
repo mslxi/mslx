@@ -1,7 +1,9 @@
 #!/bin/bash
-echo '正在安装docker,docker-compose,bash-completion,请等待'
+echo '脚本将会安装docker,docker-compose,bash-completion,请耐心等待'
+echo '正在安装docker'
 OS=$(uname -m)
 curl -fsSL https://get.docker.com | bash -s docker >/dev/null 2>&1
+echo '正在下载docker-compose'
 if [[ ${OS} == "x86_64" ]]; then
 wget "https://github.com/docker/compose/releases/download/v2.1.1/docker-compose-linux-x86_64" -O /usr/local/bin/docker-compose >/dev/null 2>&1
 fi
@@ -11,6 +13,7 @@ wget "https://github.com/docker/compose/releases/download/v2.2.2/docker-compose-
 fi
 
 chmod +x /usr/local/bin/docker-compose
+echo '正在安装bash-completion，如果系统非debian或者Ubuntu此步骤或将会出错'
 apt update -y >/dev/null 2>&1
 apt -y install bash-completion >/dev/null 2>&1
 source /usr/share/bash-completion/bash_completion
