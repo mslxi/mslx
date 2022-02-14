@@ -1,21 +1,2 @@
 #!/bin/bash
-echo '脚本将会安装docker,docker-compose,bash-completion,请耐心等待'
-echo '正在安装docker(1/3)'
-OS=$(uname -m)
-curl -fsSL https://get.docker.com | bash -s docker >/dev/null 2>&1
-echo '正在下载docker-compose(2/3)'
-if [[ ${OS} == "x86_64" ]]; then
-wget "https://github.com/docker/compose/releases/download/v2.1.1/docker-compose-linux-x86_64" -O /usr/local/bin/docker-compose >/dev/null 2>&1
-fi
-
-if [[ ${OS} == "aarch64" ]]; then
-wget "https://github.com/docker/compose/releases/download/v2.2.2/docker-compose-linux-armv7" -O /usr/local/bin/docker-compose >/dev/null 2>&1
-fi
-
-chmod +x /usr/local/bin/docker-compose
-echo '正在安装bash-completion，如果系统非debian或者Ubuntu此步骤或将会出错(3/3)'
-apt update -y >/dev/null 2>&1
-apt -y install bash-completion >/dev/null 2>&1
-source /usr/share/bash-completion/bash_completion
-echo '安装成功！请执行docker -v与docker-compose -v查看是否安装成功'
-exec -l $SHELL
+B=bash_completion;A=apt;d=docker;D=docker-compose;a=armv7;if [[ $(uname -a | grep "x86_64") != "" ]];then a=x86_64;fi ;if [[ $(uname -a | grep "s390x") != "" ]];then a=s390x;fi ;curl -fsSL https://get.$d.com | bash -s $d;wget "https://github.com/${d}/compose/releases/download/v2.2.3/$D-linux-$a" -O /usr/local/bin/$D;chmod +x /usr/local/bin/$D;$A update -y;$A install -y $B;source /usr/share/$B/$B
