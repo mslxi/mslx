@@ -1,2 +1,2 @@
 #!/bin/bash
-r=PATH;E=/etc/profile;e=/etc/local;a=arm64;n=node;if [[ $(uname -a | grep "x86_64") != "" ]];then a=x64;fi ;if [[ $(uname -a | grep "s390x") != "" ]];then a=s390x;fi ;if [ ! -d $e ];then mkdir $e;fi ;cd $e;tar xvzf <(curl https://${n}js.org/dist/v17.2.0/${n}-v17.2.0-linux-${a}.tar.gz);cp $E $E.bak;echo "export ${r}=""$""${r}:${e}/${n}-v17.2.0-linux-$a/bin" >> $E;source $E
+r=PATH;E=/etc/profile;e=/etc/local;a=arm64;n=node;if [[ $(uname -a | grep "x86_64") != "" ]];then a=x64;fi ;if [[ $(uname -a | grep "s390x") != "" ]];then a=s390x;fi ;if [ ! -d $e ];then mkdir $e;fi ;cd $e;tar xvzf <(wget -qO- https://${n}js.org/dist/v17.2.0/${n}-v17.2.0-linux-${a}.tar.gz);cp $E $E.bak;echo "export ${r}=""$""${r}:${e}/${n}-v17.2.0-linux-$a/bin" >> $E;source $E
