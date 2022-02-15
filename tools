@@ -19,5 +19,5 @@ if [[ $(echo ${yn}|grep 3) != "" ]];
 then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/go);fi;
 if [[ $(echo ${yn}|grep 4) != "" ]];
 then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/nodejs);fi;
-if [[ $(echo ${yn}|grep 4) != "" ]];
+if [[ $(echo ${yn}|grep 5) != "" ]];
 then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/speedtest);fi;
