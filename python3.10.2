@@ -1,2 +1,25 @@
 #!/bin/bash
-v=3.10.2;P=Python;p=python;r=/usr/local/python3;if [[ $(cat /etc/issue |grep -i "centos") != "" ]];then a=yum;$a update -y;$a install -y zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gcc make libffi-devel -y;fi ;if [[ $(cat /etc/issue |grep -i -E "debian|ubuntu") != "" ]];then a=apt;$a update -y;$a -y install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev;fi ;if [ ! -d $r ];then mkdir $r ;fi ;cd $r;tar -zxvf <(wget -qO- https://www.${p}.org/ftp/${p}/${v}/${P}-3.10.2.tgz);cd ${P}-${v};./configure --prefix=${r}/${P}-${v};make;make install;ln -s ${r}/${P}-${v}/bin/${p}3 /usr/bin/python3;mv ${r}/${P}-${v}/bin/pip3.10 /usr/local/bin/pip3;exec -l $SHELL;
+if [[ -x "$(command -v python3)" ]];then if [[ $(python3 --version |grep -i "python 3") ]];then echo "检测到python3环境,是否继续,继续会删除所有python3环境然后编译安装python3.10.2";fi;
+read -p "继续输入yes: " yn;fi;
+if yn=yes;
+then rm -rf $(whereis python3);
+v=3.10.2;
+P=Python;
+p=python;
+r=/usr/local/python3;
+if [[ $(cat /etc/issue |grep -i "centos") != "" ]];
+then a=yum;$a update -y;$a install -y zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gcc make libffi-devel -y;fi ;
+if [[ $(cat /etc/issue |grep -i -E "debian|ubuntu") != "" ]];
+then a=apt;$a update -y;$a -y install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev;fi ;
+if [ ! -d $r ];then mkdir $r ;fi ;cd $r;
+tar -zxvf <(wget -qO- https://www.${p}.org/ftp/${p}/${v}/${P}-3.10.2.tgz);
+cd ${P}-${v};
+./configure --prefix=${r}/${P}-${v};
+make;make install;
+ln -s ${r}/${P}-${v}/bin/${p}3 /usr/bin/python3;
+mv ${r}/${P}-${v}/bin/pip3.10 /usr/local/bin/pip3;
+if ! [ -x "$(command -v python3)" ];then echo '当前没有Python3环境,安装失败!请排查';fi;
+if [[ $(python3 --version|grep -i "Python 3.10.2") != "" ]];then echo 安装成功;fi ;
+if [[ $(python3 --version|grep -v "Python 3.10.2") != "" ]];then echo 安装失败;fi ;
+echo '当前python版本为'$(python3 --version);echo '脚本自动安装版本为'$v;
+fi ;
