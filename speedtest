@@ -1,6 +1,6 @@
 #!/bin/bash
 echo '正在安装speedtest,请等待'
-bash <(curl -s https://install.speedtest.net/app/cli/install.deb.sh)
+curl -s https://install.speedtest.net/app/cli/install.deb.sh | sudo bash
 apt install speedtest -y
 echo '安装成功，开始测速'
 speedtest
