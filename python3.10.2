@@ -21,5 +21,5 @@ mv ${r}/${P}-${v}/bin/pip3.10 /usr/local/bin/pip3;
 if ! [ -x "$(command -v ${p}3)" ];then echo "当前没有${p}3环境,安装失败!请排查";fi;
 if [[ $(${p}3 --version|grep -i "${P} 3.10.2") != "" ]];then echo 安装成功;fi ;
 if [[ $(${p}3 --version|grep -v "${P} 3.10.2") != "" ]];then echo 安装失败;fi ;
-echo "当前${p}版本为"$(${p}3 --version);echo '脚本自动安装版本为'$v;
+echo "当前${p}版本为"$(${p}3 --version);echo '脚本自动安装版本为'${P}${v};
 fi ;
