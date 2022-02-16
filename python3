@@ -2,7 +2,6 @@
 P=Python;
 p=python;
 r=/usr/local/python3;
-url=https://www.${p}.org/ftp/${p}/${v}/${P}-${v}.tgz;
 y=https://www.yanyu.ltd/;
 tools=https://raw.githubusercontent.com/mslxi/mslx/main/tools;
 
@@ -25,7 +24,8 @@ green "当前网络环境是否国内网络环境?yes则使用国内代理"
 read -p "yes或者回车" gh;
 if [[ $(echo ${gh} | grep -i "yes") != "" ]];then $url=${y}${url};fi;
 green 输入要安装的python版本,到https://www.python.org/ftp/python/查看版本号,例如3.10.2
-read -p " " v;
+read -p ":" v;
+url=https://www.${p}.org/ftp/${p}/${v}/${P}-${v}.tgz;
 tar -zxvf <(wget -qO- ${url});
 cd ${P}-${v};
 ./configure --prefix=${r}/${P}-${v};
