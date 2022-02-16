@@ -5,7 +5,7 @@ green(){
 
 [[ $(id -u) != 0 ]] && green "执行sudo su切换root用户执行脚本" && exit 1
 
-green 1.一键编译安装Python3.10.2环境
+green 1.一键编译安装Python3环境
 green 2.一键安装docker
 green 3.一键安装GoLang环境
 green 4.一键安装nodejs环境
