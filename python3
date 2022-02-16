@@ -2,6 +2,9 @@
 P=Python;
 p=python;
 r=/usr/local/python3;
+url=https://www.${p}.org/ftp/${p}/${v}/${P}-${v}.tgz;
+y=https://www.yanyu.ltd/;
+
 green(){
     echo -e "\033[32m\033[01m$1\033[0m"
 }
@@ -18,9 +21,12 @@ if [[ $(cat /etc/issue |grep -i -E "debian|ubuntu") != "" ]];
 then a=apt;$a update -y;$a -y install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev;fi ;
 if [ ! -d $r ];then mkdir $r ;fi ;cd $r;
 green 输入要安装的python版本,到https://www.python.org/ftp/python/查看版本号,输入yes安装3.10.2
+green "当前网络环境是否国内网络环境?是则使用国内代理"
+read -p "输入是或否 " gh;
+if [[ $(echo ${gh} | grep -i "是") != "" ]];then url=${y}${url};fi;
 read -p ": " v;
 if [[ $(echo ${v}|grep -i 'yes') != "" ]];then v=3.10.2;fi;
-tar -zxvf <(wget -qO- https://www.${p}.org/ftp/${p}/${v}/${P}-${v}.tgz);
+tar -zxvf <(wget -qO- ${url});
 cd ${P}-${v};
 ./configure --prefix=${r}/${P}-${v};
 make;make install;
