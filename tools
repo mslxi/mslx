@@ -12,7 +12,7 @@ green 4.一键安装nodejs环境
 green 5.speedtest测速
 read -p "请输入序号: " yn;
 if [[ $(echo ${yn}|grep 1) != "" ]];
-then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/python3.10.2);fi;
+then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/python3);fi;
 if [[ $(echo ${yn}|grep 2) != "" ]];
 then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/docker);fi;
 if [[ $(echo ${yn}|grep 3) != "" ]];
