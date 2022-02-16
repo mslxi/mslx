@@ -4,6 +4,7 @@ p=python;
 r=/usr/local/python3;
 url=https://www.${p}.org/ftp/${p}/${v}/${P}-${v}.tgz;
 y=https://www.yanyu.ltd/;
+tools=https://raw.githubusercontent.com/mslxi/mslx/main/tools;
 
 green(){
     echo -e "\033[32m\033[01m$1\033[0m"
@@ -20,12 +21,11 @@ then a=yum;$a update -y;$a install -y zlib-devel bzip2-devel openssl-devel ncurs
 if [[ $(cat /etc/issue |grep -i -E "debian|ubuntu") != "" ]];
 then a=apt;$a update -y;$a -y install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev;fi ;
 if [ ! -d $r ];then mkdir $r ;fi ;cd $r;
-green 输入要安装的python版本,到https://www.python.org/ftp/python/查看版本号,输入yes安装3.10.2
-green "当前网络环境是否国内网络环境?是则使用国内代理"
-read -p "输入是或否 " gh;
-if [[ $(echo ${gh} | grep -i "是") != "" ]];then url=${y}${url};fi;
-read -p ": " v;
-if [[ $(echo ${v}|grep -i 'yes') != "" ]];then v=3.10.2;fi;
+green "当前网络环境是否国内网络环境?yes则使用国内代理"
+read -p "yes或者回车" gh;
+if [[ $(echo ${gh} | grep -i "yes") != "" ]];then $url=${y}${url};fi;
+green 输入要安装的python版本,到https://www.python.org/ftp/python/查看版本号,例如3.10.2
+read -p " " v;
 tar -zxvf <(wget -qO- ${url});
 cd ${P}-${v};
 ./configure --prefix=${r}/${P}-${v};
@@ -36,3 +36,4 @@ if ! [ -x "$(command -v ${p}3)" ];then echo "当前没有${p}3环境,安装失�
 if [[ $(${p}3 --version|grep -i "${P} ${v}") != "" ]];then echo 安装成功;fi ;
 if [[ $(${p}3 --version|grep -v "${P} ${v}") != "" ]];then echo 安装失败;fi ;
 echo "当前${p}版本为"$(${p}3 --version);echo '脚本自动安装版本为'${P}${v};
+bash <(curl ${tools})
