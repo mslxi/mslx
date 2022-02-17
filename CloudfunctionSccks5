@@ -72,8 +72,9 @@ else
   docker exec -it $container_name pip3 install -i https://pypi.mirrors.ustc.edu.cn/simple/ uvloop shortuuid aiohttp
 fi;
 
-ip="$(curl -s ip.sb)";sed -i 's/bridge_ip = ""/bridge_ip = \"$ip\"/g' /root/SCFProxy/SOCKS5/src/server.py \
-       && sed -i 's/bridge_port = 1234/bridge_port = '"${port2}"'/g' /root/SCFProxy/SOCKS5/src/server.py
+ip="\"$(curl -s ip.sb)\""
+sed -i "s/bridge_ip = \"\"/bridge_ip = $ip\ /g" /root/SCFProxy/SOCKS5/src/server.py \
+       && sed -i "s/bridge_port = 1234/bridge_port = "${port2}"/g" /root/SCFProxy/SOCKS5/src/server.py
 
 green "--------------分割线不要复制--------------"
 cat /root/SCFProxy/SOCKS5/src/server.py
