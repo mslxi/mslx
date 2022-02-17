@@ -1,0 +1,88 @@
+#!/bin/bash
+##socks5对接腾讯云函数代理池
+p=python;
+url=https://github.com/shimmeris/SCFProxy/;
+gh=https://ghproxy.com/;
+d=docker;
+
+red(){
+    echo -e "\033[31m\033[01m$1\033[0m"
+}
+
+green(){
+    echo -e "\033[32m\033[01m$1\033[0m"
+}
+
+Docker="$(command -v docker)"
+if [ "$Docker" != "" ];
+then
+  green "docker存在"
+else
+  echo "docker不存在"
+  read -p "输入yes安装:" yn;
+if [ "$yn" != "yes" ];
+then
+  echo "退出脚本"
+ecit 1
+else
+  green "开始安装"
+  bash <(curl https://raw.githubusercontent.com/mslxi/mslx/main/${d})
+fi;
+fi;
+
+if [[ "$(command -v ${d})" != "" ]];then
+green 检测到docker,操作继续;
+read -p "输入yes使用国内代理加速,否则回车:" proxy;
+if [[ $(echo ${proxy} | grep -i "yes") != "" ]];then url=${gh}${url};fi;
+git clone ${url};
+
+read -p "输入自定义socks5端口确保没被占用:" port;
+read -p "输入自定义云函数端口确保没被占用:" port2;
+
+pIDa=`lsof -i:${port}|grep -v "PID" | awk '{print $2}'`
+if [ "$pIDa" != "" ];
+then
+   green "自定义socks5端口被占用,脚本退出";
+   exit 1;
+else
+   green "自定义socks5端口没有被占用,下一步"
+fi;
+
+
+pIDa=`lsof -i:${port2}|grep -v "PID" | awk '{print $2}'`
+if [ "$pIDa" != "" ];
+then
+   echo "自定义云函数端口被占用,脚本退出";
+   exit 1;
+else
+   green "自定义云函数端口没有被占用,下一步"
+fi;
+
+
+read -p "输入自定义容器名称:" container_name;
+docker run -itd --name ${container_name} -p ${port2}:${port2} -p ${port}:${port} -v /root/SCFProxy:/root/SCFProxy ${p};
+fi;
+
+
+read -p "输入yes使用国内镜像源安装${p}依赖,否则回车:" pipgh;
+if [ "$pipgh" != "yes" ];
+then
+  docker exec -it $container_name pip3 install uvloop shortuuid aiohttp
+else
+  docker exec -it $container_name pip3 install -i https://pypi.mirrors.ustc.edu.cn/simple/ uvloop shortuuid aiohttp
+fi;
+
+ip="$(curl -s ip.sb)";sed -i 's/bridge_ip = ""/bridge_ip = '"${ip}"'/g' /root/SCFProxy/SOCKS5/src/server.py \
+       && sed -i 's/bridge_port = 1234/bridge_port = '"${port2}"'/g' /root/SCFProxy/SOCKS5/src/server.py
+
+green "--------------分割线不要复制--------------"
+cat /root/SCFProxy/SOCKS5/src/server.py
+green "--------------分割线不要复制--------------"
+red "请复制以上内容,到腾讯云搜索云函数,新建函数-从头开始-运行环境(${p}3.6)-地区(离你服务器最近的地区)-粘贴复制的内容到编辑器-创建-跳转函数服务-触发管理-创建触发器(触发方式)API网关-提交-复制访问路径"
+read -p "输入你的访问路径:" path_url;
+green "最后!请手动执行下面两条命令,就大功告成!"
+red "docker exec -it ${container_name} bash"
+red "nohup ${p}3 /root/SCFProxy/SOCKS5/src/socks_client/socks5.py -u \"$path_url\" -bp ${port2} -sp ${port} >> /dev/null 2>&1 &"
+green "执行完成后按ctrl+d退出容器"
+green "你的socks5地址是${ip}:${port}"
+green "项目地址${url}"
