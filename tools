@@ -10,6 +10,7 @@ green 2.一键安装docker
 green 3.一键安装GoLang环境
 green 4.一键安装nodejs环境
 green 5.speedtest测速
+green 6.端口扫描
 read -p "请输入序号: " yn;
 if [[ $(echo ${yn}|grep 1) != "" ]];
 then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/python3);fi;
@@ -21,3 +22,5 @@ if [[ $(echo ${yn}|grep 4) != "" ]];
 then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/nodejs);fi;
 if [[ $(echo ${yn}|grep 5) != "" ]];
 then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/speedtest);fi;
+if [[ $(echo ${yn}|grep 6) != "" ]];
+then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/port);fi;
