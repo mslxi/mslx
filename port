@@ -23,7 +23,7 @@ do
 
 nport=`echo ""|telnet ${ip} ${i} 2>/dev/null|grep "\^]"|wc -l`
 if [ "$nport" -eq "0" ];then
-echo "${ip}:${i}端口没有开启"
+echo "${ip}:${i}端口没有开启">>/dev/null
 else 
 if [ "$txt" = "yes" ];
 then
