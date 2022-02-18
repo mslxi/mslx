@@ -27,7 +27,7 @@ echo "${ip}:${i}端口没有开启"
 else 
 if [ "$txt" = "yes" ];
 then
-red "${i}" > ${txt1}.txt
+red "${i}" >> ${txt1}.txt
 fi;
 echo "${ip}:${i}端口开启"
 fi;
