@@ -2,7 +2,34 @@
 red(){
     echo -e "\033[31m\033[01m$1\033[0m"
 }
+green(){
+    echo -e "\033[32m\033[01m$1\033[0m"
+}
+
+telnet="$(command -v telnet)"
+if [ "$telnet" != "" ]
+then 
 red "脚本仅仅测试本地端口,请勿用于非法用途"
+green "telnet!存在!"
+else 
+red "不存在telnet,正在安装"
+sys="$(cat /etc/issue)"
+if [[ $(cat /etc/issue | grep -i -e "debian|ubuntu" ) != "" ]];                                                                                 
+then a=yum
+else a=apt
+fi;
+$a update -y >/dev/null 2>&1;$a install telnet >/dev/null 2>&1
+telnet="$(command -v telnet)"
+if [ "$telnet" != "" ]
+then 
+green "telnet安装成功"
+else 
+red "不存在telnet,安装失败!请手动安装!"
+fi;
+fi;
+
+
+
 echo "直接回车默认127.0.0.1"
 read -p "输入ip=" ip;
 if [ -z $ip ]
@@ -27,7 +54,7 @@ echo "${ip}:${i}端口没有开启">>/dev/null
 else 
 if [ "$txt" = "yes" ];
 then
-red "${i}" >> ${txt1}.txt
+echo "${i}" >> ${txt1}.txt
 fi;
 echo "${ip}:${i}端口开启"
 fi;
