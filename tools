@@ -11,6 +11,7 @@ green 3.一键安装GoLang环境
 green 4.一键安装nodejs环境
 green 5.speedtest测速
 green 6.端口扫描
+green 6.socks5对接腾讯云函数代理池（若操作不当倾家荡产!慎用!）
 read -p "请输入序号: " yn;
 if [[ $(echo ${yn}|grep 1) != "" ]];
 then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/python3);fi;
@@ -24,3 +25,5 @@ if [[ $(echo ${yn}|grep 5) != "" ]];
 then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/speedtest);fi;
 if [[ $(echo ${yn}|grep 6) != "" ]];
 then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/port);fi;
+if [[ $(echo ${yn}|grep 7) != "" ]];
+then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/CloudfunctionSccks5);fi;
