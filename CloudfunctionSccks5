@@ -23,7 +23,7 @@ else
 if [ "$yn" != "yes" ];
 then
   echo "退出脚本"
-ecit 1
+exit 1
 else
   green "开始安装"
   bash <(curl https://raw.githubusercontent.com/mslxi/mslx/main/${d})
