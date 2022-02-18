@@ -1,0 +1,34 @@
+#!/bin/bash
+red(){
+    echo -e "\033[31m\033[01m$1\033[0m"
+}
+red "脚本仅仅测试本地端口,请勿用于非法用途"
+echo "直接回车默认127.0.0.1"
+read -p "输入ip=" ip;
+if [ -z $ip ]
+then ip=127.0.0.1;
+fi;
+read -p "输入开始端口=" aport;
+read -p "输入结束端口=" zport;
+red "是否要输出开启的端口到txt?"
+read -p "是输入yes否则回车=" txt;
+if [ "$txt" != "yes" ];
+then echo ""
+else read -p "自定义txt文件名=" txt1;
+fi;
+num=0
+for ((i=${aport};i<=${zport};i+=1))
+do
+
+
+nport=`echo ""|telnet ${ip} ${i} 2>/dev/null|grep "\^]"|wc -l`
+if [ "$nport" -eq "0" ];then
+echo "${ip}:${i}端口没有开启"
+else 
+if [ "$txt" = "yes" ];
+then
+red "${i}" > ${txt1}.txt
+fi;
+echo "${ip}:${i}端口开启"
+fi;
+done
