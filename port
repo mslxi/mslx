@@ -44,7 +44,7 @@ then echo ""
 else read -p "自定义txt文件名=" txt1;
 fi;
 if [ "$ip" = "127.0.0.1" ]
-then ms=0.1
+then ms=0.01
 else
 red "请输入自定义断开延迟,目标ip离你越近延迟可输入越低,300的ping值一般0.5足以"
 read -p "自定义输入延迟=" ms;
