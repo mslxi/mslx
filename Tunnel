@@ -20,11 +20,11 @@ fi
 
 echo -e "
 —————————————————————————————————————————————————————————————
-        argo tunnel一键部署脚本(穿透本地端口到cloudflare)
+${red}
+       argo tunnel一键部署脚本(穿透本地端口到cloudflare)
+${red}
+       本脚本仅适合域名已经托管在cloudflare的用户使用
  ${green}
-        本脚本仅适合域名已经托管在cloudflare的用户使用
-
-
        CloudFlared 客户端状态：$cloudflaredStatus
        账户登录状态：$loginStatus
        有无隧道：$conf
@@ -43,6 +43,7 @@ echo "
 请问你要新增隧道还是删除隧道?
 1.新增隧道
 2.删除隧道
+3.列出隧道
 "
 read -p "输入序号："  yon
 if [ "$yon" = "2" ];
@@ -53,7 +54,7 @@ if [ "$yon" = "2" ];
   
   if [[ $(echo $cf |grep -v '$Tunnelname' ) = "" ]]
   then
-  echo "删除成功"
+  echo -e "$green删除成功"
   fi
   fi
   fi
@@ -113,4 +114,8 @@ echo -e "${green}
           公网域名：${httpurl}
           本地地址：${localurl}"
 exit 1
+fi
+
+if [ "$yon" = "3" ]
+then cloudflared tunnel list
 fi
