@@ -85,5 +85,6 @@ green "最后!请手动执行下面两条命令,就大功告成!"
 red "docker exec -it ${container_name} bash"
 red "nohup ${p}3 /root/SCFProxy/SOCKS5/src/socks_client/socks5.py -u \"$path_url\" -bp ${port2} -sp ${port} >> /dev/null 2>&1 &"
 green "执行完成后按ctrl+d退出容器"
-green "你的socks5地址是${ip}:${port}"
+ipa=$(curl -s ip.sb)
+green "你的socks5地址是${ipa}:${port}"
 green "项目地址${url}"
