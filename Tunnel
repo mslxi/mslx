@@ -30,11 +30,12 @@ if [ "$yon" = "del" ];
   read -p "输入要删除的隧道名(name)："  Tunnelname
   cloudflared tunnel cleanup $Tunnelname
   cloudflared tunnel delete $Tunnelname
-  fi
-  if [[ $(echo $cf |grep -v '$Tunnelname' ) ]]
+  
+  if [[ $(echo $cf |grep -v '$Tunnelname' ) = "" ]]
   then
   echo "删除成功"
   exit 1
+  fi
   fi
   fi
 if [ "$yon" != "del" ];
