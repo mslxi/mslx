@@ -5,14 +5,29 @@ yellow='\033[0;33m'
 plain='\033[0m'
 
 clear
+
+
+
+	[[ -z $(cloudflared -help 2>/dev/null) ]] && cloudflaredStatus="未安装"
+	[[ -n $(cloudflared -help 2>/dev/null) ]] && cloudflaredStatus="已安装"
+	[[ -f /root/.cloudflared/cert.pem ]] && loginStatus="已登录"
+	[[ ! -f /root/.cloudflared/cert.pem ]] && loginStatus="未登录"
+file=$(ls /root/.cloudflared/*.json 2>/dev/null)
+if [ "$file" != "" ]
+then conf=存在隧道
+else conf=没有隧道
+fi
+
 echo -e "
 —————————————————————————————————————————————————————————————
         argo tunnel一键部署脚本(穿透本地端口到cloudflare)
  ${green}
         本脚本仅适合域名已经托管在cloudflare的用户使用
 
-        原作者   翔翎
-        二改脚本 雪小板
+
+       CloudFlared 客户端状态：$cloudflaredStatus
+       账户登录状态：$loginStatus
+       有无隧道：$conf
 ${plain}
 —————————————————————————————————————————————————————————————
 "
@@ -20,12 +35,17 @@ ${plain}
 [[ $EUID -ne 0 ]] && echo -e "${red}错误: ${plain} 必须使用root用户运行此脚本！\n" && exit 1
 
 
+
 cf=$(cloudflared tunnel list >>/dev/null 2>&1)
-if [[ $(echo $cf |grep -v "No tunnels") = "" ]]
+if [ "$conf" = "存在隧道" ];
 then
-echo "请问你要新增隧道还是删除隧道?"
-read -p "输入del或者回车："  yon
-if [ "$yon" = "del" ];
+echo "
+请问你要新增隧道还是删除隧道?
+1.新增隧道
+2.删除隧道
+"
+read -p "输入序号："  yon
+if [ "$yon" = "2" ];
   then cloudflared tunnel list
   read -p "输入要删除的隧道名(name)："  Tunnelname
   cloudflared tunnel cleanup $Tunnelname
@@ -34,11 +54,10 @@ if [ "$yon" = "del" ];
   if [[ $(echo $cf |grep -v '$Tunnelname' ) = "" ]]
   then
   echo "删除成功"
-  exit 1
   fi
   fi
   fi
-if [ "$yon" != "del" ];
+if [ "$cloudflaredStatus" = "未安装" ];
 then
   CPU=$(uname -m)
   if [[ "$CPU" == "aarch64" ]]
@@ -63,21 +82,26 @@ else echo "脚本暂时仅支持debian|ubuntu|centos"
 fi
 #安装系统依赖
 $a update -y> /dev/null 2>&1 
-$a install wget supervisor -y > /dev/null 2>&1 
+$a install wget -y > /dev/null 2>&1 
 
 #开始拉取argo tunnel
 file1="/usr/bin/cloudflared"
-if [ ! -f "$file1" ]; then
+if [ ! -f "$file1" ]
+then
 wget  "https://ghproxy.com/https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-${cpu}" -O cloudflared
 chmod +x cloudflared && cp cloudflared /usr/bin
 fi
-file="/root/.cloudflared/cert.pem"
-if [ ! -f "$file" ]; then
+fi
+
+if [ "${loginStatus}" = "未登录" ]
+then
 echo -e "${green}请点击或者复制下方生成的授权链接，进入CF管理面板进行授权操作。${plain}"
 cloudflared login
 echo -e "${green}授权完成，请按照指令提示继续${plain}"
 fi
 
+if [ "$yon" = "1" ]
+then
 read -p "请输入要穿透到cloudflare的域名(不需要输入http://): " httpurl
 read -p "请输入本地web服务的url地址(http://ip:port): " localurl
 read -p "请输入任意隧道名: " Tunnel
