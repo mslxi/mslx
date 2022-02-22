@@ -84,7 +84,9 @@ read -p "请输入任意隧道名: " Tunnel
 
 cloudflared tunnel create $Tunnel
 cloudflared tunnel route dns $Tunnel $httpurl
-cd ~/ && nohup cloudflared tunnel run --url ${localurl} ${Tunnel} >>/dev/null 2>&1 &
-echo -e "${green}不出意外的话现在你访问${httpurl}就是本地${localurl}的内容"
+nohup cloudflared tunnel run --url ${localurl} ${Tunnel} >>/dev/null 2>&1 &
+echo -e "${green}
+          公网域名：${httpurl}
+          本地地址：${localurl}"
 exit 1
 fi
