@@ -1,2 +1,100 @@
 #!/bin/bash
-B=bash_completion;A=apt;d=docker;D=docker-compose;a=armv7;if [[ $(uname -a | grep "x86_64") != "" ]];then a=x86_64;fi ;if [[ $(uname -a | grep "s390x") != "" ]];then a=s390x;fi ;curl -fsSL https://get.$d.com | bash -s $d;wget "https://github.com/${d}/compose/releases/download/v2.2.3/$D-linux-$a" -O /usr/local/bin/$D;chmod +x /usr/local/bin/$D;$A update -y;$A install -y $B;source /usr/share/$B/$B
+
+green(){
+    echo -e "\033[32m\033[01m$1\033[0m"
+}
+greem='\033[32m\033[01m'
+plain='\033[0m'
+
+	[[ -z $(docker -v 2>/dev/null) ]] && docker="未安装"
+	[[ -n $(docker -v 2>/dev/null) ]] && docker="已安装"
+	[[ -z $(docker-compose -v 2>/dev/null) ]] && docker-compose="未安装"
+	[[ -n $(docker-compose -v 2>/dev/null) ]] && docker-compose="已安装"
+clear
+
+echo -e "—————————————————————————————————————————————————————————————${greem}
+docker=$docker
+docker-compose=${docker-compose}${plain}
+—————————————————————————————————————————————————————————————"
+CPU=$(uname -m)
+  if [[ "$CPU" == "aarch64" ]]
+  then
+    cpu=aarch64
+  elif [[ "$CPU" == "arm" ]]
+  then
+    cpu=armv7
+  elif [[ "$CPU" == "x86_64" ]]
+  then
+    cpu=x86_64
+  elif [[ "$CPU" == "s390x" ]]
+  then
+    cpu=s390x
+  else
+  echo "脚本不支持此服务器架构"
+ fi
+
+
+
+sys=$(cat /etc/issue)
+if [[ $(echo $sys |grep -i -E 'debian|ubuntu') != "" ]]
+then a=apt;
+elif [[ $(echo $sys |grep -i 'centos') != "" ]]
+then a=yum;
+else echo "脚本暂时仅支持debian|ubuntu|centos"
+fi
+
+
+
+if [[ "$(command -v curl)" ]];
+then green "检测到crul,继续..."
+else echo "不存在curl,开始安装,请等待..."
+${a} update -y >>/dev/null 2>&1
+${a} install curl -y >>/dev/null 2>&1
+fi
+
+if [[ "$(command -v wget)" ]];
+then green "检测到wget,继续..."
+else echo "不存在wget,开始安装,请等待..."
+${a} update -y >>/dev/null 2>&1
+${a} install wget -y >>/dev/null 2>&1
+fi
+
+url=https://get.docker.com/
+url2=https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-${cpu}
+
+if [ "${docker}" = "未安装" ] && [ "${docker-compose}" = "未安装" ];
+then 
+echo "当前是否国内环境?是则使用国内源"
+read -p "是则输入yes否则回车=" yn;
+if [ "$yn" = "yes" ]
+then
+green "使用国内源继续操作"
+url=https://get.daocloud.io/docker
+url2=https://ghproxy.com/https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-${cpu}
+fi
+fi
+
+if [[ "$(command -v docker)" ]];
+then 
+green "docker存在!"
+else 
+echo "正在安装docker..."
+curl -sSL ${url} | sh >/dev/null 2>&1
+fi
+
+if [[ "$(command -v docker-compose)" ]];
+then
+green "docker-compose存在,脚本退出!"
+exit 1
+else
+echo "正在安装docker-compose..."
+wget ${url2} -O /usr/local/bin/docker-compose >/dev/null 2>&1
+chmod +x /usr/local/bin/docker-compose
+fi
+
+if [[ "$(command -v docker)" ]];
+then green "docker安装成功!"
+fi
+if [[ "$(command -v docker-compose)" ]];
+then green "docker-compose安装成功!"
+fi
