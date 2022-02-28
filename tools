@@ -15,18 +15,18 @@ green 7.socks5对接腾讯云函数代理池（若操作不当倾家荡产!慎�
 green 8.一键cloudflare内网穿透
 read -p "请输入序号: " yn;
 if [[ $(echo ${yn}|grep 1) != "" ]];
-then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/python3);fi;
+then bash <(curl -s https://cdn.jsdelivr.net/gh/mslxi/mslx/python3);fi;
 if [[ $(echo ${yn}|grep 2) != "" ]];
-then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/docker);fi;
+then bash <(curl -s https://cdn.jsdelivr.net/gh/mslxi/mslx/docker);fi;
 if [[ $(echo ${yn}|grep 3) != "" ]];
-then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/go);fi;
+then bash <(curl -s https://cdn.jsdelivr.net/gh/mslxi/mslx/go);fi;
 if [[ $(echo ${yn}|grep 4) != "" ]];
-then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/nodejs);fi;
+then bash <(curl -s https://cdn.jsdelivr.net/gh/mslxi/mslx/nodejs);fi;
 if [[ $(echo ${yn}|grep 5) != "" ]];
-then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/speedtest);fi;
+then bash <(curl -s https://cdn.jsdelivr.net/gh/mslxi/mslx/speedtest);fi;
 if [[ $(echo ${yn}|grep 6) != "" ]];
-then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/port);fi;
+then bash <(curl -s https://cdn.jsdelivr.net/gh/mslxi/mslx/port);fi;
 if [[ $(echo ${yn}|grep 7) != "" ]];
-then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/CloudfunctionSccks5);fi;
+then bash <(curl -s https://cdn.jsdelivr.net/gh/mslxi/mslx/CloudfunctionSccks5);fi;
 if [[ $(echo ${yn}|grep 8) != "" ]];
-then bash <(curl -s https://raw.githubusercontent.com/mslxi/mslx/main/Tunnel)
+then bash <(curl -s https://cdn.jsdelivr.net/gh/mslxi/mslx/Tunnel)
