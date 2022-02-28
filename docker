@@ -46,7 +46,7 @@ fi
 
 
 if [[ "$(command -v curl)" ]];
-then green "检测到crul,继续..."
+then green "检测到curl,继续..."
 else echo "不存在curl,开始安装,请等待..."
 ${a} update -y >>/dev/null 2>&1
 ${a} install curl -y >>/dev/null 2>&1
