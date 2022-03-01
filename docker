@@ -61,18 +61,18 @@ fi
 
 url=https://get.docker.com/
 url2=https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-${cpu}
-
 if [ "${docker}" = "未安装" ] && [ "${docker-compose}" = "未安装" ];
 then 
-echo "当前是否国内环境?是则使用国内源"
-read -p "是则输入yes否则回车=" yn;
-if [ "$yn" = "yes" ]
-then
-green "使用国内源继续操作"
+    ## China_IP
+    if [[ -z "${CN}" ]]; then
+        if [[ $(curl -m 10 -s https://api.ip.sb/geoip | grep 'China') != "" ]]; then
+            echo "当前环境可能为国内，将使用国内源完成安装"
 url=https://get.daocloud.io/docker
 url2=https://ghproxy.com/https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-${cpu}
 fi
 fi
+fi
+
 
 if [[ "$(command -v docker)" ]];
 then 
