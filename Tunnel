@@ -4,15 +4,14 @@ green='\033[0;32m'
 yellow='\033[0;33m'
 plain='\033[0m'
 
+[[ $EUID -ne 0 ]] && echo -e "${red}错误: ${plain} 必须使用root用户运行此脚本！\n" && exit 1
 clear
-
-
 
 	[[ -z $(cloudflared -help 2>/dev/null) ]] && cloudflaredStatus="未安装"
 	[[ -n $(cloudflared -help 2>/dev/null) ]] && cloudflaredStatus="已安装"
 	[[ -f /root/.cloudflared/cert.pem ]] && loginStatus="已登录"
 	[[ ! -f /root/.cloudflared/cert.pem ]] && loginStatus="未登录"
-file=$(ls /root/.cloudflared/*.json 2>/dev/null)
+file="$(ls /root/.cloudflared/*.json 2>/dev/null)"
 if [ "$file" != "" ]
 then conf=存在隧道
 else conf=没有隧道
@@ -31,9 +30,6 @@ ${red}
 ${plain}
 —————————————————————————————————————————————————————————————
 "
-
-[[ $EUID -ne 0 ]] && echo -e "${red}错误: ${plain} 必须使用root用户运行此脚本！\n" && exit 1
-
 
 
 cf=$(cloudflared tunnel list >>/dev/null 2>&1)
@@ -58,8 +54,7 @@ if [ "$yon" = "2" ];
   fi
   fi
   fi
-if [ "$cloudflaredStatus" = "未安装" ];
-then
+
   CPU=$(uname -m)
   if [[ "$CPU" == "aarch64" ]]
   then
@@ -71,7 +66,8 @@ then
   then
     cpu=amd64
   else
-  echo "脚本不支持此服务器架构"
+  echo "脚本不支持此服务器架构，脚本退出！"
+  exit 1
   fi
 
 sys=$(cat /etc/issue)
@@ -79,7 +75,8 @@ if [[ $(echo $sys |grep -i -E 'debian|ubuntu') != "" ]]
 then a=apt;
 elif [[ $(echo $sys |grep -i 'centos') != "" ]]
 then a=yum;
-else echo "脚本暂时仅支持debian|ubuntu|centos"
+else echo "脚本暂时仅支持debian|ubuntu|centos，脚本退出！"
+exit 1
 fi
 #安装系统依赖
 $a update -y> /dev/null 2>&1 
@@ -92,7 +89,7 @@ then
 wget  "https://ghproxy.com/https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-${cpu}" -O cloudflared
 chmod +x cloudflared && cp cloudflared /usr/bin
 fi
-fi
+
 
 if [ "${loginStatus}" = "未登录" ]
 then
@@ -101,7 +98,7 @@ cloudflared login
 echo -e "${green}授权完成，请按照指令提示继续${plain}"
 fi
 
-if [ "$yon" = "1" ]
+if [ "${yon}" = "1" ] || [ "${conf}" = "没有隧道" ]
 then
 read -p "请输入要穿透到cloudflare的域名(不需要输入http://): " httpurl
 read -p "请输入本地web服务的url地址(http://ip:port): " localurl
@@ -115,6 +112,7 @@ echo -e "${green}
           本地地址：${localurl}"
 exit 1
 fi
+
 
 if [ "$yon" = "3" ]
 then cloudflared tunnel list
