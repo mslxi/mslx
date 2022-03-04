@@ -73,7 +73,7 @@ if [ "$yon" = "2" ];
 sys=$(cat /etc/issue)
 if [[ $(echo $sys |grep -i -E 'debian|ubuntu') != "" ]]
 then a=apt;
-elif [[ $(echo $sys |grep -i 'centos') != "" ]]
+elif [[ $(echo $sys |grep -E 'centos') != "" ]]
 then a=yum;
 else echo "脚本暂时仅支持debian|ubuntu|centos，脚本退出！"
 exit 1
