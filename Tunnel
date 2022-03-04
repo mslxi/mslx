@@ -14,7 +14,7 @@ system=Debian
 elif [[ $(echo $sys |grep -i -E 'ubuntu') != "" ]]
 then a=apt;
 system=Ubuntu
-elif [[ $(echo $cent |grep -E 'centos') != "" ]]
+elif [[ $(echo $cent |grep -i -E 'centos') != "" ]]
 then a=yum;
 system=Centos
 else echo "脚本暂时仅支持debian|ubuntu|centos，脚本退出！"
@@ -25,6 +25,7 @@ fi
 	[[ -n $(cloudflared -help 2>/dev/null) ]] && cloudflaredStatus="已安装"
 	[[ -f /root/.cloudflared/cert.pem ]] && loginStatus="已登录"
 	[[ ! -f /root/.cloudflared/cert.pem ]] && loginStatus="未登录"
+	
 file="$(ls /root/.cloudflared/*.json 2>/dev/null)"
 if [ "$file" != "" ]
 then conf=存在隧道
