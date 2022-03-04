@@ -6,6 +6,20 @@ plain='\033[0m'
 
 [[ $EUID -ne 0 ]] && echo -e "${red}错误: ${plain} 必须使用root用户运行此脚本！\n" && exit 1
 clear
+sys=$(cat /etc/issue)
+cent=$(cat /etc/redhat-release 2>/dev/null)
+if [[ $(echo $sys |grep -i -E 'debian') != "" ]]
+then a=apt;
+system=Debian
+elif [[ $(echo $sys |grep -i -E 'ubuntu') != "" ]]
+then a=apt;
+system=Ubuntu
+elif [[ $(echo $cent |grep -E 'centos') != "" ]]
+then a=yum;
+system=Centos
+else echo "脚本暂时仅支持debian|ubuntu|centos，脚本退出！"
+exit 1
+fi
 
 	[[ -z $(cloudflared -help 2>/dev/null) ]] && cloudflaredStatus="未安装"
 	[[ -n $(cloudflared -help 2>/dev/null) ]] && cloudflaredStatus="已安装"
@@ -24,6 +38,7 @@ ${red}
 ${red}
        本脚本仅适合域名已经托管在cloudflare的用户使用
  ${green}
+       当前系统: $system
        CloudFlared 客户端状态：$cloudflaredStatus
        账户登录状态：$loginStatus
        有无隧道：$conf
@@ -70,14 +85,7 @@ if [ "$yon" = "2" ];
   exit 1
   fi
 
-sys=$(cat /etc/issue)
-if [[ $(echo $sys |grep -i -E 'debian|ubuntu') != "" ]]
-then a=apt;
-elif [[ $(echo $sys |grep -E 'centos') != "" ]]
-then a=yum;
-else echo "脚本暂时仅支持debian|ubuntu|centos，脚本退出！"
-exit 1
-fi
+
 #安装系统依赖
 $a update -y> /dev/null 2>&1 
 $a install wget -y > /dev/null 2>&1 
