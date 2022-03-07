@@ -1,2 +1,52 @@
 #!/bin/bash
-r=PATH;E=/etc/profile;e=/etc/local;a=arm64;n=node;if [[ $(uname -a | grep "x86_64") != "" ]];then a=x64;fi ;if [[ $(uname -a | grep "s390x") != "" ]];then a=s390x;fi ;if [ ! -d $e ];then mkdir $e;fi ;cd $e;tar xvzf <(wget -qO- https://${n}js.org/dist/v17.2.0/${n}-v17.2.0-linux-${a}.tar.gz);cp $E $E.bak;echo "export ${r}=""$""${r}:${e}/${n}-v17.2.0-linux-$a/bin" >> $E;source $E
+
+sys=$(cat /etc/issue)
+cent=$(cat /etc/redhat-release 2>/dev/null)
+if [[ $(echo $sys |grep -i -E 'debian') != "" ]]
+then a=apt;
+system=Debian
+elif [[ $(echo $sys |grep -i -E 'ubuntu') != "" ]]
+then a=apt;
+system=Ubuntu
+elif [[ $(echo $cent |grep -i -E 'centos') != "" ]]
+then a=yum;
+system=Centos
+else echo "脚本暂时仅支持debian|ubuntu|centos，脚本退出！"
+exit 1
+fi
+
+ CPU=$(uname -m)
+  if [[ "$CPU" == "aarch64" ]]
+  then
+    cpu=arm64
+  elif [[ "$CPU" == "arm" ]]
+  then
+    cpu=armv7l
+  elif [[ "$CPU" == "x86_64" ]]
+  then
+    cpu=x64
+  elif [[ "$CPU" == "s390x" ]]
+  then
+    cpu=s390x  
+  else
+  echo "脚本不支持此服务器架构，脚本退出！"
+  exit 1
+  fi
+
+if [[ "$(command -v wget)" != "" ]]
+then $a update && $a install wget
+fi
+
+file1="/etc/local"
+if [ ! -f "$file1" ]
+then mkdir -p "$file1"
+fi
+cd $file1 && tar xvzf <(wget -qO- https://nodejs.org/dist/v17.6.0/node-v17.6.0-linux-${cpu}.tar.gz)
+
+echo -e "export PATH=PATH:/etc/local/node-v17.6.0-linux-$cpu/bin" >> /etc/profile
+source /etc/profile
+v=$(node -v)
+if [ $v = "v17.6.0" ]
+then echo "安装已经完成，如果没有node环境请检查是否zsh导致"
+else echo "安装可能失败了，请检查"
+fi
