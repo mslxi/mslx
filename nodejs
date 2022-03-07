@@ -43,7 +43,7 @@ then mkdir -p "$file1"
 fi
 cd $file1 && tar xvzf <(wget -qO- https://nodejs.org/dist/v17.6.0/node-v17.6.0-linux-${cpu}.tar.gz)
 
-echo -e "export PATH=PATH:/etc/local/node-v17.6.0-linux-$cpu/bin" >> /etc/profile
+echo -e "export PATH=""$""PATH:/etc/local/node-v17.6.0-linux-$cpu/bin" >> /etc/profile
 source /etc/profile
 v=$(node -v)
 if [ $v = "v17.6.0" ]
