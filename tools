@@ -9,7 +9,7 @@ green "
 —————————————————————————————————————————————————————————————
 "
 
-[[ $(id -u) != 0 ]] && green "执行sudo su切换root用户执行脚本" && exit 1
+[[ $(id -u) != 0 ]] && green "检测到当前环境非root用户，请先执行sudo su切换root用户执行脚本" && exit 1
 
 green 1.一键编译安装Python3环境
 green 2.一键安装docker
