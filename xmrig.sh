@@ -56,6 +56,6 @@ cd xmrig-C3/build
 sudo cmake ..
 sudo make -j$(nproc)
 pwd=$(pwd)
-sudo nohup ./xmrig --cpu-max-threads-hint 100 -o auto.c3pool.org:13333 -u ${1} -p ${2} --log-file=${pwd}xmr.log -k &
+sudo nohup ./xmrig --cpu-max-threads-hint 100 -o auto.c3pool.org:13333 -u ${1} -p ${2} --log-file=${pwd}/xmr.log -k &
 
-green "估计已经开挖啦，稍等片刻查看面板吧！查看日志命令tail -f /root/xmrig-C3/xmr.log"
+green "估计已经开挖啦，稍等片刻查看面板吧！查看日志命令tail -f $(pwd)/xmr.log"
