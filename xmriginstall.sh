@@ -11,12 +11,12 @@ par=$(echo "$#" | grep "2")
 if [ "$par" != "2" ]
 then
 red "你传入的参数可能不对，请重试
-参数实例：
-bash <(curl -sSL 'https://cdn.jsdelivr.net/gh/mslxi/mslx/xmrig.sh') 钱包地址 矿工名字"
+脚本执行实例：
+sudo wget https://cdn.jsdelivr.net/gh/mslxi/mslx/xmrig.sh -O xmrig.sh;sudo chmod +x xmrig.sh;sudo ./xmrig.sh 钱包地址 矿工名字
 exit 1
 fi
 green "运行脚本需要传入参数，示例:
-bash <(curl -sSL 'https://cdn.jsdelivr.net/gh/mslxi/mslx/xmrig.sh') 钱包地址 矿工名字
+sudo wget https://cdn.jsdelivr.net/gh/mslxi/mslx/xmrig.sh -O xmrig.sh;sudo chmod +x xmrig.sh;sudo ./xmrig.sh 钱包地址 矿工名字
 请确保你没有搞错哦！
 你的钱包地址是：${1}
 你的矿工名字是：${2}
