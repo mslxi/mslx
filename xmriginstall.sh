@@ -11,12 +11,12 @@ par=$(echo "$#" | grep "2")
 if [ "$par" != "2" ]
 then
 red "你传入的参数可能不对，请重试
-脚本执行实例：
-sudo wget https://cdn.jsdelivr.net/gh/mslxi/mslx/xmrig.sh -O xmrig.sh;sudo chmod +x xmrig.sh;sudo ./xmrig.sh 钱包地址 矿工名字
+参数实例：
+sudo wget https://cdn.jsdelivr.net/gh/mslxi/mslx/xmrig.sh -O xmrig.sh;sudo chmod +x xmrig.sh;./xmrig.sh 钱包地址 矿工名字
 exit 1
 fi
 green "运行脚本需要传入参数，示例:
-sudo wget https://cdn.jsdelivr.net/gh/mslxi/mslx/xmrig.sh -O xmrig.sh;sudo chmod +x xmrig.sh;sudo ./xmrig.sh 钱包地址 矿工名字
+sudo wget https://cdn.jsdelivr.net/gh/mslxi/mslx/xmrig.sh -O xmrig.sh;sudo chmod +x xmrig.sh;./xmrig.sh 钱包地址 矿工名字
 请确保你没有搞错哦！
 你的钱包地址是：${1}
 你的矿工名字是：${2}
@@ -37,28 +37,24 @@ fi
 echo "开始安装编译所需依赖"
 sudo apt-get install git build-essential cmake libuv1-dev libssl-dev libhwloc-dev -y >>/dev/null 2>&1
 
-sudo cd /root
 
 if [[ "$(command -v git)" ]];
-then 
+then
 sudo git clone https://github.com/C3Pool/xmrig-C3.git
-else 
+else
 red "没有检测到git，可能是安装失败了，请尝试手动安装git后运行！"
-${a} update -y >>/dev/null 2>&1
-${a} install curl -y >>/dev/null 2>&1
 fi
 
-sudo aa=sed -n '/constexpr const int kDefaultDonateLevel/p' /root/xmrig-C3/src/donate.h
-sudo sed -e "s/${aa}/constexpr const int kDefaultDonateLevel = 0;/g" /root/xmrig-C3/src/donate.h
+aa=$(sed -n '/kDefaultDonateLevel/p' xmrig-C3/src/donate.h)
+aa1=$(sed -n '/kMinimumDonateLevel/p' xmrig-C3/src/donate.h)
+sed -e "s/${aa}/constexpr const int kDefaultDonateLevel = 0;/g" xmrig-C3/src/donate.h \
+sed -e "s/${aa1}/constexpr const int kMinimumDonateLevel = 0;/g" xmrig-C3/src/donate.h
 
-sudo aa1=sed -n '/constexpr const int kMinimumDonateLevel/p' /root/xmrig-C3/src/donate.h
-sudo sed -e "s/${aa1}/constexpr const int kMinimumDonateLevel = 0;/g" /root/xmrig-C3/src/donate.h
-
-sudo mkdir /root/xmrig-C3/build
-sudo cd /root/xmrig-C3/build
+sudo mkdir xmrig-C3/build
+cd xmrig-C3/build
 sudo cmake ..
 sudo make -j$(nproc)
-
-sudo nohup /root/xmrig-C3/build/xmrig --cpu-max-threads-hint 100 -o auto.c3pool.org:13333 -u ${1} -p ${2} --log-file=/root/xmrig-C3/xmr.log -k & 
+pwd=$(pwd)
+sudo nohup ./xmrig --cpu-max-threads-hint 100 -o auto.c3pool.org:13333 -u ${1} -p ${2} --log-file=${pwd}xmr.log -k &
 
 green "估计已经开挖啦，稍等片刻查看面板吧！查看日志命令tail -f /root/xmrig-C3/xmr.log"
