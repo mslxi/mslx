@@ -48,8 +48,8 @@ fi
 
 aa=$(sed -n '/kDefaultDonateLevel/p' xmrig-C3/src/donate.h)
 aa1=$(sed -n '/kMinimumDonateLevel/p' xmrig-C3/src/donate.h)
-sed -e "s/${aa}/constexpr const int kDefaultDonateLevel = 0;/g" xmrig-C3/src/donate.h \
-sed -e "s/${aa1}/constexpr const int kMinimumDonateLevel = 0;/g" xmrig-C3/src/donate.h
+sed -i "s/${aa}/constexpr const int kDefaultDonateLevel = 0;/g" xmrig-C3/src/donate.h
+sed -i "s/${aa1}/constexpr const int kMinimumDonateLevel = 0;/g" xmrig-C3/src/donate.h
 
 sudo mkdir xmrig-C3/build
 cd xmrig-C3/build
