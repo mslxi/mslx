@@ -56,11 +56,12 @@ echo "
 1.新增隧道
 2.删除隧道
 3.列出隧道
+4.启动隧道/重启隧道/更改隧道本地ip端口
 "
 read -p "输入序号："  yon
 if [ "$yon" = "2" ];
   then cloudflared tunnel list
-  read -p "输入要删除的隧道名(name)："  Tunnelname
+  read -p "输入要删除的隧道名(NAME)："  Tunnelname
   cloudflared tunnel cleanup $Tunnelname
   cloudflared tunnel delete $Tunnelname
   
@@ -110,19 +111,28 @@ fi
 if [ "${yon}" = "1" ] || [ "${conf}" = "没有隧道" ]
 then
 read -p "请输入要穿透到cloudflare的域名(不需要输入http://): " httpurl
-read -p "请输入本地web服务的url地址(http://ip:port): " localurl
+read -p "请输入本地ip:端口(不需要输入http://): " localurl
 read -p "请输入任意隧道名: " Tunnel
 
 cloudflared tunnel create $Tunnel
 cloudflared tunnel route dns $Tunnel $httpurl
-nohup cloudflared tunnel run --url ${localurl} ${Tunnel} >>/dev/null 2>&1 &
+nohup cloudflared tunnel run --url http://${localurl} ${Tunnel} >>/dev/null 2>&1 &
 echo -e "${green}
           公网域名：${httpurl}
-          本地地址：${localurl}"
+          本地地址：${localurl}
+          隧道NAME：${Tunnel}"
 exit 1
 fi
 
 
 if [ "$yon" = "3" ]
 then cloudflared tunnel list
+fi
+
+if [ "$yon" = "4" ]
+then cloudflared tunnel list
+read -p "请输入要操作的隧道(NAME): " rename
+read -p "请输入本地ip:端口(不需要输入http://): " reurl
+nohup cloudflared tunnel run --url http://${reurl} ${rename} >>/dev/null 2>&1 &
+echo -e "${green}完成"
 fi
