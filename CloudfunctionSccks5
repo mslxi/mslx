@@ -25,8 +25,7 @@ then
   echo "退出脚本"
 exit 1
 else
-  green "开始安装"
-  bash <(curl https://raw.githubusercontent.com/mslxi/mslx/main/${d})
+  bash <(curl -sSL 'https://cdn.jsdelivr.net/gh/mslxi/mslx/docker')
 fi;
 fi;
 
