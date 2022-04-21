@@ -6,19 +6,14 @@ plain='\033[0m'
 
 [[ $EUID -ne 0 ]] && echo -e "${red}错误: ${plain} 必须使用root用户运行此脚本！\n" && exit 1
 clear
-sys=$(cat /etc/issue)
-cent=$(cat /etc/redhat-release 2>/dev/null)
-if [[ $(echo $sys |grep -i -E 'debian') != "" ]]
-then a=apt;
-system=Debian
-elif [[ $(echo $sys |grep -i -E 'ubuntu') != "" ]]
-then a=apt;
-system=Ubuntu
-elif [[ $(echo $cent |grep -i -E 'centos') != "" ]]
-then a=yum;
-system=Centos
-else echo "脚本暂时仅支持debian|ubuntu|centos，脚本退出！"
-exit 1
+if [[ $(cat /etc/redhat-release 2>/dev/null |grep -i -E 'centos') != "" ]];then
+  a=yum
+elif [[ $(cat /etc/issue 2>/dev/null |grep -i -E 'debian|ubuntu') != "" ]];then
+  a=apt
+else 
+  echo "不支持当前系统"
+  echo "仅支持Debian,Ubuntu,Centos"
+  exit 1
 fi
 
 	[[ -z $(cloudflared -help 2>/dev/null) ]] && cloudflaredStatus="未安装"
@@ -27,9 +22,10 @@ fi
 	[[ ! -f /root/.cloudflared/cert.pem ]] && loginStatus="未登录"
 	
 file="$(ls /root/.cloudflared/*.json 2>/dev/null)"
-if [ "$file" != "" ]
-then conf=存在隧道
-else conf=没有隧道
+if [ "$file" != "" ];then
+ conf=存在隧道
+else
+ conf=没有隧道
 fi
 
 echo -e "
@@ -47,30 +43,16 @@ ${plain}
 —————————————————————————————————————————————————————————————
 "
 
-
 cf=$(cloudflared tunnel list >>/dev/null 2>&1)
-if [ "$conf" = "存在隧道" ];
-then
-echo "
-请问你要新增隧道还是删除隧道?
-1.新增隧道
-2.删除隧道
-3.列出隧道
-4.启动隧道/重启隧道/更改隧道本地ip端口
-"
-read -p "输入序号："  yon
-if [ "$yon" = "2" ];
-  then cloudflared tunnel list
-  read -p "输入要删除的隧道名(NAME)："  Tunnelname
-  cloudflared tunnel cleanup $Tunnelname
-  cloudflared tunnel delete $Tunnelname
-  
-  if [[ $(echo $cf |grep -v '$Tunnelname' ) = "" ]]
-  then
-  echo -e "$green删除成功"
-  fi
-  fi
-  fi
+if [ "$conf" = "存在隧道" ];then
+ echo "
+ 请问你要新增隧道还是删除隧道?
+ 1.新增隧道
+ 2.删除隧道
+ 3.列出隧道
+ 4.启动隧道/重启隧道/更改隧道本地ip端口"
+ read -p "输入序号："  yon
+fi
 
   CPU=$(uname -m)
   if [[ "$CPU" == "aarch64" ]]
@@ -87,25 +69,21 @@ if [ "$yon" = "2" ];
   exit 1
   fi
 
-
 #安装系统依赖
 $a update -y> /dev/null 2>&1 
 $a install wget -y > /dev/null 2>&1 
 
 #开始拉取argo tunnel
 file1="/usr/bin/cloudflared"
-if [ ! -f "$file1" ]
-then
-wget  "https://ghproxy.com/https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-${cpu}" -O cloudflared
-chmod +x cloudflared && cp cloudflared /usr/bin
+if [ ! -f "$file1" ];then
+ wget  "https://ghproxy.com/https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-${cpu}" -O cloudflared
+ chmod +x cloudflared && cp cloudflared /usr/bin
 fi
 
-
-if [ "${loginStatus}" = "未登录" ]
-then
-echo -e "${green}请点击或者复制下方生成的授权链接，进入CF管理面板进行授权操作。${plain}"
-cloudflared login
-echo -e "${green}授权完成，请按照指令提示继续${plain}"
+if [ "${loginStatus}" = "未登录" ];then
+ echo -e "${green}请点击或者复制下方生成的授权链接，进入CF管理面板进行授权操作。${plain}"
+ cloudflared login
+ echo -e "${green}授权完成，请按照指令提示继续${plain}"
 fi
 
 if [ "${yon}" = "1" ] || [ "${conf}" = "没有隧道" ]
@@ -124,15 +102,25 @@ echo -e "${green}
 exit 1
 fi
 
-
-if [ "$yon" = "3" ]
-then cloudflared tunnel list
+if [ "$yon" = "2" ];then
+    cloudflared tunnel list
+    read -p "输入要删除的隧道名(NAME)："  Tunnelname
+    cloudflared tunnel cleanup $Tunnelname
+    cloudflared tunnel delete $Tunnelname
+  
+  if [[ $(echo $cf |grep -v '$Tunnelname' ) = "" ]];then
+      echo -e "$green删除成功"
+  fi
 fi
 
-if [ "$yon" = "4" ]
-then cloudflared tunnel list
-read -p "请输入要操作的隧道(NAME): " rename
-read -p "请输入本地ip:端口(不需要输入http://): " reurl
-nohup cloudflared tunnel run --url http://${reurl} ${rename} >>/dev/null 2>&1 &
-echo -e "${green}完成"
+if [ "$yon" = "3" ];then
+ cloudflared tunnel list
+fi
+
+if [ "$yon" = "4" ];then
+ cloudflared tunnel list
+ read -p "请输入要操作的隧道(NAME): " rename
+ read -p "请输入本地ip:端口(不需要输入http://): " reurl
+ nohup cloudflared tunnel run --url http://${reurl} ${rename} >>/dev/null 2>&1 &
+ echo -e "${green}完成"
 fi
