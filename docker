@@ -29,45 +29,57 @@ else
 	red "脚本不支持此服务器架构"
 	exit 1
 fi
-if [[ $(cat /etc/redhat-release 2>/dev/null | grep -i -E 'centos') != "" ]]; then
-	a="yum install -y"
-	up="yum update -y"
-	Alpine="False"
-elif [[ $(cat /etc/issue 2>/dev/null | grep -i -E 'debian|ubuntu') != "" ]]; then
-	a="apt install -y"
-	up="apt update -y"
-	Alpine="False"
-elif [[ $(cat /etc/issue 2>/dev/null | grep -i -E 'Alpine') != "" ]]; then
-	Alpine="True"
-else
-	red "不支持当前系统"
-	red "仅支持Debian,Ubuntu,Centos,Alpine"
-	exit 1
-fi
 if [[ $(curl -m 10 -s https://ipapi.co/json | grep 'China') != "" ]]; then
 	url="https://get.daocloud.io/docker"
 	url2="dn-dao-github-mirror.daocloud.io"
-	cn="True"
+	proxy="--repository http://mirrors.ustc.edu.cn/alpine/latest-stable/community"
 	echo "当前机器环境为大陆，将使用国内源完成安装"
 else
 	url="https://get.docker.com/"
 	url2="github.com"
+	proxy="--repository https://dl-cdn.alpinelinux.org/alpine/latest-stable/community"
 fi
-if [[ $Alpine == "False" ]]; then
-	if ! [ -x "$(command -v curl)" ]; then
-		echo "不存在curl,正在安装,请等待..."
-		$up >>/dev/null 2>&1
-		$a curl >>/dev/null 2>&1
+
+if [[ $(cat /etc/issue 2>/dev/null | grep -i -E 'Alpine') != "" ]]; then
+	Alpine="True"
+fi
+depends=("curl" "wget")
+depend=""
+for i in "${!depends[@]}"; do
+	now_depend="${depends[$i]}"
+	if [ ! -x "$(command -v $now_depend)" ]; then
+		echo "$now_depend 未安装"
+		depend="$now_depend $depend"
 	fi
-	if ! [ -x "$(command -v wget)" ]; then
-		echo "不存在wget,正在安装,请等待..."
-		$up >>/dev/null 2>&1
-		$a wget >>/dev/null 2>&1
+done
+if [ "$depend" ]; then
+	if [ -x "$(command -v apk)" ]; then
+		echo "apk包管理器,正在尝试安装依赖:$depend"
+		apk --no-cache add $depend $proxy >>/dev/null 2>&1
+	elif [ -x "$(command -v apt-get)" ]; then
+		echo "apt-get包管理器,正在尝试安装依赖:$depend"
+		apt -y install $depend >>/dev/null 2>&1
+	elif [ -x "$(command -v yum)" ]; then
+		echo "yum包管理器,正在尝试安装依赖:$depend"
+		yum -y install $depend >>/dev/null 2>&1
+	else
+		red "未找到合适的包管理工具,请手动安装:$depend"
+		exit 1
 	fi
+	for i in "${!depends[@]}"; do
+		now_depend="${depends[$i]}"
+		if [ ! -x "$(command -v $now_depend)" ]; then
+			red "$now_depend 未成功安装,请尝试手动安装!"
+			exit 1
+		fi
+	done
+fi
+
+if [[ $Alpine != "True" ]]; then
 	if [[ "$(command -v docker)" ]]; then
-		green "docker存在!"
+		green "docker已安装!"
 		if [[ "$(command -v docker-compose)" ]]; then
-			green "docker-compose存在,脚本退出!"
+			green "docker-compose已安装!"
 			exit 1
 		else
 			echo "正在安装docker-compose..."
@@ -97,21 +109,10 @@ if [[ $Alpine == "False" ]]; then
 	fi
 fi
 if [[ $Alpine == True ]]; then
-	if ! [ -x "$(command -v wget)" ]; then
-		echo "不存在wget,正在安装,请等待..."
-		apk update >>/dev/null 2>&1
-		apk add wget $proxy >>/dev/null 2>&1
-	fi
-	if [[ $cn == True ]]; then
-		echo "当前机器环境为大陆，将使用国内源完成安装"
-		proxy="--repository http://mirrors.ustc.edu.cn/alpine/latest-stable/community"
-	else
-		proxy="--repository https://dl-cdn.alpinelinux.org/alpine/latest-stable/community"
-	fi
 	if [[ "$(command -v docker)" ]]; then
-		green "docker存在!"
+		green "docker已安装!"
 		if [[ "$(command -v docker-compose)" ]]; then
-			green "docker-compose存在,脚本退出!"
+			green "docker-compose已安装!"
 			exit 1
 		else
 			echo "正在安装docker-compose..."
@@ -120,9 +121,9 @@ if [[ $Alpine == True ]]; then
 		fi
 	else
 		echo "正在安装docker..."
-		apk add docker $proxy
-		rc-update add docker boot
-		service docker start
+		apk add docker $proxy >>/dev/null 2>&1
+		rc-update add docker boot >>/dev/null 2>&1
+		service docker start >>/dev/null 2>&1
 	fi
 	if [[ "$(command -v docker)" ]]; then
 		green "docker安装成功!"
