@@ -47,19 +47,19 @@ depends=("curl" "wget")
 depend=""
 for i in "${!depends[@]}"; do
 	now_depend="${depends[$i]}"
-	if [ ! -x "$(command -v $now_depend)" ]; then
+	if [ ! -x "$(command -v $now_depend 2>/dev/null)" ]; then
 		echo "$now_depend 未安装"
 		depend="$now_depend $depend"
 	fi
 done
 if [ "$depend" ]; then
-	if [ -x "$(command -v apk)" ]; then
+	if [ -x "$(command -v apk 2>/dev/null)" ]; then
 		echo "apk包管理器,正在尝试安装依赖:$depend"
 		apk --no-cache add $depend $proxy >>/dev/null 2>&1
-	elif [ -x "$(command -v apt-get)" ]; then
+	elif [ -x "$(command -v apt-get 2>/dev/null)" ]; then
 		echo "apt-get包管理器,正在尝试安装依赖:$depend"
 		apt -y install $depend >>/dev/null 2>&1
-	elif [ -x "$(command -v yum)" ]; then
+	elif [ -x "$(command -v yum 2>/dev/null)" ]; then
 		echo "yum包管理器,正在尝试安装依赖:$depend"
 		yum -y install $depend >>/dev/null 2>&1
 	else
