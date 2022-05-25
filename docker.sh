@@ -1,0 +1,145 @@
+#!/bin/bash
+red() {
+	echo -e "\033[31m\033[01m$1\033[0m"
+}
+green() {
+	echo -e "\033[32m\033[01m$1\033[0m"
+}
+greem='\033[32m\033[01m'
+plain='\033[0m'
+[[ -z $(docker -v 2>/dev/null) ]] && docker="未安装"
+[[ -n $(docker -v 2>/dev/null) ]] && docker="已安装"
+[[ -z $(docker-compose -v 2>/dev/null) ]] && docker-compose="未安装"
+[[ -n $(docker-compose -v 2>/dev/null) ]] && docker-compose="已安装"
+clear
+echo -e "—————————————————————————————————————————————————————————————$greem
+  docker=$docker
+  docker-compose=${docker-compose}$plain
+—————————————————————————————————————————————————————————————"
+CPU=$(uname -m)
+if [[ "$CPU" == "aarch64" ]]; then
+	cpu=aarch64
+elif [[ "$CPU" == "arm" ]]; then
+	cpu=armv7
+elif [[ "$CPU" == "x86_64" ]]; then
+	cpu=x86_64
+elif [[ "$CPU" == "s390x" ]]; then
+	cpu=s390x
+else
+	red "脚本不支持此服务器架构"
+	exit 1
+fi
+if [[ $(curl -m 10 -s https://ipapi.co/json | grep 'China') != "" ]]; then
+	url="https://get.daocloud.io/docker"
+	url2="dn-dao-github-mirror.daocloud.io"
+	proxy="--repository http://mirrors.ustc.edu.cn/alpine/latest-stable/community"
+	echo "当前机器环境为大陆，将使用国内源完成安装"
+else
+	url="https://get.docker.com/"
+	url2="github.com"
+	proxy="--repository https://dl-cdn.alpinelinux.org/alpine/latest-stable/community"
+fi
+
+if [[ $(cat /etc/issue 2>/dev/null | grep -i -E 'Alpine') != "" ]]; then
+	Alpine="True"
+fi
+depends=("curl" "wget")
+depend=""
+for i in "${!depends[@]}"; do
+	now_depend="${depends[$i]}"
+	if [ ! -x "$(command -v $now_depend 2>/dev/null)" ]; then
+		echo "$now_depend 未安装"
+		depend="$now_depend $depend"
+	fi
+done
+if [ "$depend" ]; then
+	if [ -x "$(command -v apk 2>/dev/null)" ]; then
+		echo "apk包管理器,正在尝试安装依赖:$depend"
+		apk --no-cache add $depend $proxy >>/dev/null 2>&1
+	elif [ -x "$(command -v apt-get 2>/dev/null)" ]; then
+		echo "apt-get包管理器,正在尝试安装依赖:$depend"
+		apt -y install $depend >>/dev/null 2>&1
+	elif [ -x "$(command -v yum 2>/dev/null)" ]; then
+		echo "yum包管理器,正在尝试安装依赖:$depend"
+		yum -y install $depend >>/dev/null 2>&1
+	else
+		red "未找到合适的包管理工具,请手动安装:$depend"
+		exit 1
+	fi
+	for i in "${!depends[@]}"; do
+		now_depend="${depends[$i]}"
+		if [ ! -x "$(command -v $now_depend)" ]; then
+			red "$now_depend 未成功安装,请尝试手动安装!"
+			exit 1
+		fi
+	done
+fi
+
+if [[ $Alpine != "True" ]]; then
+	if [[ "$(command -v docker)" ]]; then
+		green "docker已安装!"
+		if [[ "$(command -v docker-compose)" ]]; then
+			green "docker-compose已安装!"
+			exit 1
+		else
+			echo "正在安装docker-compose..."
+			wget https://$url2/docker/compose/releases/download/v2.4.1/docker-compose-linux-$cpu -O /usr/local/bin/docker-compose >/dev/null 2>&1
+			chmod +x /usr/local/bin/docker-compose
+		fi
+	else
+		echo "正在安装docker..."
+		curl -sSL $url | sh >/dev/null 2>&1
+	fi
+	if [[ "$(command -v docker)" ]]; then
+		green "docker安装成功!"
+	else
+		red "docker安装失败，请尝试手动安装"
+	fi
+	if ! [[ "$(command -v docker-compose)" ]]; then
+		echo "正在安装docker-compose..."
+		wget https://$url2/docker/compose/releases/download/v2.4.1/docker-compose-linux-$cpu -O /usr/local/bin/docker-compose >/dev/null 2>&1
+		chmod +x /usr/local/bin/docker-compose
+		if [[ "$(command -v docker-compose)" ]]; then
+			green "docker-compose安装成功!"
+		else
+			red "docker-compose安装失败，请尝试手动安装"
+		fi
+	else
+		green "docker-compose安装成功!"
+	fi
+fi
+if [[ $Alpine == True ]]; then
+	if [[ "$(command -v docker)" ]]; then
+		green "docker已安装!"
+		if [[ "$(command -v docker-compose)" ]]; then
+			green "docker-compose已安装!"
+			exit 1
+		else
+			echo "正在安装docker-compose..."
+			wget https://$url2/docker/compose/releases/download/v2.4.1/docker-compose-linux-$cpu -O /usr/local/bin/docker-compose >/dev/null 2>&1
+			chmod +x /usr/local/bin/docker-compose
+		fi
+	else
+		echo "正在安装docker..."
+		apk add docker $proxy >>/dev/null 2>&1
+		rc-update add docker boot >>/dev/null 2>&1
+		service docker start >>/dev/null 2>&1
+	fi
+	if [[ "$(command -v docker)" ]]; then
+		green "docker安装成功!"
+	else
+		red "docker安装失败，请尝试手动安装"
+	fi
+	if ! [[ "$(command -v docker-compose)" ]]; then
+		echo "正在安装docker-compose..."
+		wget https://$url2/docker/compose/releases/download/v2.4.1/docker-compose-linux-$cpu -O /usr/local/bin/docker-compose >/dev/null 2>&1
+		chmod +x /usr/local/bin/docker-compose
+		if [[ "$(command -v docker-compose)" ]]; then
+			green "docker-compose安装成功!"
+		else
+			red "docker-compose安装失败，请尝试手动安装"
+		fi
+	else
+		green "docker-compose安装成功!"
+	fi
+fi
