@@ -16,7 +16,7 @@ green "2.一键cloudflare内网穿透"
 
 read -p "请输入序号: " yn
  if [[ $yn == "1" ]];then
-  bash <(curl -sSL 'https://cdn.jsdelivr.net/gh/mslxi/mslx/docker')
+  bash <(curl -sSL 'https://cdn.jsdelivr.net/gh/mslxi/mslx/docker.sh')
  elif [[ $yn == "2" ]];then
   bash <(curl -sSL 'https://cdn.jsdelivr.net/gh/mslxi/mslx/Tunnel')
 else
