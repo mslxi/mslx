@@ -1,2 +1,0 @@
-#!/bin/bash
-e=/etc/profile;A=apt;a=arm64;if [[ $(uname -a | grep "x86_64") != "" ]];then a=amd64;fi ;if [[ $(uname -a | grep "s390x") != "" ]];then a=s390x;fi ;if [ ! -d /usr/local ];then mkdir /usr/local;fi ;tar -xvzf <(wget -qO- https://golang.google.cn/dl/go1.17.6.linux-${a}.tar.gz) -C /usr/local;echo -e "export GO111MODULE=on\nexport GOPROXY=https://goproxy.cn\nexport GOROOT=/usr/local/go\nexport GOPATH=/usr/local/go/path\nexport PATH=""$""PATH:""$""GOROOT/bin:""$""GOPATH/bin" >> $e ;$A update -y;$A install cmark -y;source $e ;exec -l $SHELL
