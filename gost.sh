@@ -50,7 +50,7 @@ if [[ $(curl -m 10 -s https://ipapi.co/json | grep 'China') != "" ]]; then
 	url="https://dn-dao-github-mirror.daocloud.io/go-gost/gost/releases/download/v3.0.0-beta.2/gost-linux-${cpu}-3.0.0-beta.2.gz"
 	echo "当前机器环境为大陆，将使用国内源完成安装"
 else
-	url="https://github.com/go-gost/gost/releases/download/v3.0.0-beta.2/gost-linux-${cpu}-3.0.0-beta.2.gz"
+	url="https://github.com/go-gost/gost/releases/download/v3.0.0-rc.2/gost-linux-${cpu}-3.0.0-rc.2.gz"
 fi
 
 wget "${url}" -O /root/gost.gz >>/dev/null 2>&1
