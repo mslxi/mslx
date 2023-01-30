@@ -39,11 +39,10 @@ else
 	url2="github.com"
 	proxy="--repository https://dl-cdn.alpinelinux.org/alpine/latest-stable/community"
 fi
-
 if [[ $(cat /etc/issue 2>/dev/null | grep -i -E 'Alpine') != "" ]]; then
 	Alpine="True"
 fi
-depends=("curl" "wget")
+depends=("curl" "wget" "jq")
 depend=""
 for i in "${!depends[@]}"; do
 	now_depend="${depends[$i]}"
@@ -74,6 +73,7 @@ if [ "$depend" ]; then
 		fi
 	done
 fi
+version=`curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r '.tag_name'`
 
 if [[ $Alpine != "True" ]]; then
 	if [[ "$(command -v docker)" ]]; then
@@ -83,7 +83,7 @@ if [[ $Alpine != "True" ]]; then
 			exit 1
 		else
 			echo "正在安装docker-compose..."
-			wget https://$url2/docker/compose/releases/download/v2.4.1/docker-compose-linux-$cpu -O /usr/local/bin/docker-compose >/dev/null 2>&1
+			wget https://$url2/docker/compose/releases/download/$version/docker-compose-linux-$cpu -O /usr/local/bin/docker-compose >/dev/null 2>&1
 			chmod +x /usr/local/bin/docker-compose
 		fi
 	else
@@ -97,7 +97,7 @@ if [[ $Alpine != "True" ]]; then
 	fi
 	if ! [[ "$(command -v docker-compose)" ]]; then
 		echo "正在安装docker-compose..."
-		wget https://$url2/docker/compose/releases/download/v2.4.1/docker-compose-linux-$cpu -O /usr/local/bin/docker-compose >/dev/null 2>&1
+		wget https://$url2/docker/compose/releases/download/$version/docker-compose-linux-$cpu -O /usr/local/bin/docker-compose >/dev/null 2>&1
 		chmod +x /usr/local/bin/docker-compose
 		if [[ "$(command -v docker-compose)" ]]; then
 			green "docker-compose安装成功!"
@@ -116,7 +116,7 @@ if [[ $Alpine == True ]]; then
 			exit 1
 		else
 			echo "正在安装docker-compose..."
-			wget https://$url2/docker/compose/releases/download/v2.4.1/docker-compose-linux-$cpu -O /usr/local/bin/docker-compose >/dev/null 2>&1
+			wget https://$url2/docker/compose/releases/download/$version/docker-compose-linux-$cpu -O /usr/local/bin/docker-compose >/dev/null 2>&1
 			chmod +x /usr/local/bin/docker-compose
 		fi
 	else
@@ -132,7 +132,7 @@ if [[ $Alpine == True ]]; then
 	fi
 	if ! [[ "$(command -v docker-compose)" ]]; then
 		echo "正在安装docker-compose..."
-		wget https://$url2/docker/compose/releases/download/v2.4.1/docker-compose-linux-$cpu -O /usr/local/bin/docker-compose >/dev/null 2>&1
+		wget https://$url2/docker/compose/releases/download/$version/docker-compose-linux-$cpu -O /usr/local/bin/docker-compose >/dev/null 2>&1
 		chmod +x /usr/local/bin/docker-compose
 		if [[ "$(command -v docker-compose)" ]]; then
 			green "docker-compose安装成功!"
