@@ -31,8 +31,8 @@ fi
 
 if [ -x "$(command -v zsh)" ]; then
 	sed -i "s/ZSH_THEME=\"[a-z]*\"/ZSH_THEME=\"wedisagree\"/g" ~/.zshrc
-	git clone https://ghproxy.com/https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-	git clone https://ghproxy.com/https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+	git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+	git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 	git clone https://github.com/zsh-users/zsh-autosuggestions.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 	aa=$(grep -E -o "^plugins=\(+[a-z].*[a-z$]" ~/.zshrc)
 	sed -i "s/${aa}/${aa} z zsh-syntax-highlighting zsh-autosuggestions extract/g" ~/.zshrc
