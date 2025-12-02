@@ -15,26 +15,85 @@ check_port() {
   elif command -v lsof >/dev/null 2>&1; then
     lsof -i :$port >/dev/null 2>&1
   else
-    # 无法检测时默认端口可用
     return 1
   fi
 }
 
-# --- 1. 安装 Sing-Box ---
-echo ">>> 正在检查并安装 sing-box..."
+# --- 辅助函数：卸载功能 ---
+uninstall_socks5() {
+  local port=$1
+  local service_name="sing-box-socks5-${port}"
+  local config_file="/etc/sing-box/conf/socks5-${port}.conf"
+  local service_file="/etc/systemd/system/${service_name}.service"
+
+  echo ">>> 正在执行卸载 (端口: $port)..."
+
+  # 检查服务是否存在
+  if systemctl list-units --full -all | grep -Fq "$service_name.service"; then
+    echo "停止并禁用服务: $service_name"
+    systemctl stop "$service_name"
+    systemctl disable "$service_name"
+    rm -f "$service_file"
+    echo "服务文件已删除。"
+    systemctl daemon-reload
+  else
+    echo "未找到服务: $service_name (可能已手动删除)"
+  fi
+
+  # 删除配置文件
+  if [ -f "$config_file" ]; then
+    rm -f "$config_file"
+    echo "配置文件已删除: $config_file"
+  else
+    echo "未找到配置文件: $config_file"
+  fi
+
+  echo ">>> 卸载完成。"
+}
+
+# =========================================================
+# 1. 参数解析 (优先处理卸载)
+# =========================================================
+download_beta=false
+download_version=""
+
+# 循环解析参数
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --uninstall)
+      shift
+      if [ -z "$1" ]; then
+        echo "错误: --uninstall 需要指定端口号 (例如: --uninstall 55001)"
+        exit 1
+      fi
+      uninstall_socks5 "$1"
+      exit 0
+      ;;
+    --beta)
+      download_beta=true
+      shift
+      ;;
+    --version)
+      shift
+      download_version="$1"
+      shift
+      ;;
+    *)
+      # 未知参数忽略或根据需要处理
+      shift
+      ;;
+  esac
+done
+
+# =========================================================
+# 2. 安装 Sing-Box (如果不存在)
+# =========================================================
+echo ">>> 正在检查环境..."
 
 if ! command -v sing-box >/dev/null 2>&1; then
-    download_beta=false
-    download_version=""
+    echo "sing-box 未安装，开始自动安装..."
     
-    while [ $# -gt 0 ]; do
-      case "$1" in
-        --beta) download_beta=true; shift ;;
-        --version) shift; download_version="$1"; shift ;;
-        *) shift ;;
-      esac
-    done
-
+    # 检测包管理器
     if command -v pacman >/dev/null 2>&1; then
       os="linux"; arch=$(uname -m); package_suffix=".pkg.tar.zst"; package_install="pacman -U --noconfirm"
     elif command -v dpkg >/dev/null 2>&1; then
@@ -48,6 +107,7 @@ if ! command -v sing-box >/dev/null 2>&1; then
       exit 1
     fi
 
+    # 获取版本
     if [ -z "$download_version" ]; then
       if [ "$download_beta" != "true" ]; then
         latest_release=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases/latest)
@@ -58,21 +118,20 @@ if ! command -v sing-box >/dev/null 2>&1; then
     fi
 
     if [ -z "$download_version" ]; then
-        echo "错误: 无法获取下载版本。"
+        echo "错误: 无法获取 sing-box 版本信息。"
         exit 1
     fi
 
     package_name="sing-box_${download_version}_${os}_${arch}${package_suffix}"
     package_url="https://github.com/SagerNet/sing-box/releases/download/v${download_version}/${package_name}"
 
-    echo "正在下载: $package_url"
+    echo "下载: $package_url"
     curl --fail -Lo "$package_name" "$package_url"
     if [ $? -ne 0 ]; then
       echo "下载失败。"
       exit 1
     fi
 
-    echo "正在安装..."
     if command -v sudo >/dev/null 2>&1; then
       sudo $package_install "$package_name"
     else
@@ -80,19 +139,21 @@ if ! command -v sing-box >/dev/null 2>&1; then
     fi
     rm -f "$package_name"
 else
-    echo "sing-box 已安装，跳过安装步骤。"
+    echo "sing-box 已安装，跳过安装。"
 fi
 
-# --- 2. 生成随机端口 (50000-60000) ---
-# 注意：我们将端口生成提前，因为文件名需要用到端口号
-echo ">>> 正在分配端口..."
+# =========================================================
+# 3. 端口与凭证配置
+# =========================================================
+echo ">>> 正在分配资源..."
+
+# 生成端口
 MAX_RETRIES=10
 found_port=false
-
 for ((i=1; i<=MAX_RETRIES; i++)); do
   RAND_PORT=$((RANDOM % 10001 + 50000))
   if check_port "$RAND_PORT"; then
-    echo "端口 $RAND_PORT 被占用，正在重试..."
+    : # 端口占用，重试
   else
     SOCKS_PORT=$RAND_PORT
     found_port=true
@@ -101,30 +162,25 @@ for ((i=1; i<=MAX_RETRIES; i++)); do
 done
 
 if [ "$found_port" = false ]; then
-  echo "错误: 无法在 10 次尝试中找到空闲端口。"
+  echo "错误: 无法分配空闲端口。"
   exit 1
 fi
 
-# --- 3. 定义动态文件路径 ---
-# 配置文件名现在包含实际端口号，例如: socks5-54321.conf
+# 生成凭证
+SOCKS_USER=$(generate_random_string 8)
+SOCKS_PASS=$(generate_random_string 16)
+
+# 定义路径
 CONF_DIR="/etc/sing-box/conf"
 CONF_FILE="$CONF_DIR/socks5-${SOCKS_PORT}.conf"
 mkdir -p "$CONF_DIR"
 
-# 服务名也包含端口号，例如: sing-box-socks5-54321
 SERVICE_NAME="sing-box-socks5-${SOCKS_PORT}"
 SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
 
-# --- 4. 生成随机用户名和密码 ---
-SOCKS_USER=$(generate_random_string 8)
-SOCKS_PASS=$(generate_random_string 16)
-
-echo ">>> 生成凭证:"
-echo "端口: $SOCKS_PORT"
-echo "用户: $SOCKS_USER"
-echo "密码: $SOCKS_PASS"
-
-# --- 5. 写入配置文件 ---
+# =========================================================
+# 4. 写入配置 & 服务文件
+# =========================================================
 cat > "$CONF_FILE" <<EOF
 {
   "log": {
@@ -153,9 +209,7 @@ cat > "$CONF_FILE" <<EOF
   "route": {
     "rules": [
       {
-        "inbound": [
-          "socks-in"
-        ],
+        "inbound": [ "socks-in" ],
         "outbound": "direct"
       }
     ]
@@ -163,24 +217,13 @@ cat > "$CONF_FILE" <<EOF
 }
 EOF
 
-echo ">>> 配置文件已写入: $CONF_FILE"
-
-# --- 6. 创建 Systemd 服务 ---
 BINARY_PATH=$(command -v sing-box)
-if [ -z "$BINARY_PATH" ]; then
-    echo "错误: 找不到 sing-box 可执行文件路径。"
-    exit 1
-fi
-
 cat > "$SERVICE_FILE" <<EOF
 [Unit]
 Description=Sing-Box SOCKS5 Service (Port ${SOCKS_PORT})
-Documentation=https://sing-box.sagernet.org
 After=network.target nss-lookup.target
 
 [Service]
-CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
-AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
 Type=simple
 User=root
 Group=root
@@ -188,35 +231,61 @@ ExecStart=$BINARY_PATH run -c $CONF_FILE
 Restart=on-failure
 RestartSec=10s
 LimitNOFILE=infinity
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-echo ">>> Systemd 服务文件已创建: $SERVICE_FILE"
-
-# --- 7. 启动服务 ---
-echo ">>> 正在启动服务: $SERVICE_NAME"
+# =========================================================
+# 5. 启动服务
+# =========================================================
 systemctl daemon-reload
-systemctl enable "$SERVICE_NAME"
+systemctl enable "$SERVICE_NAME" >/dev/null 2>&1
 systemctl restart "$SERVICE_NAME"
 
-# --- 8. 检查运行状态 ---
 sleep 2
-if systemctl is-active --quiet "$SERVICE_NAME"; then
-    echo ""
-    echo "=========================================="
-    echo "   Sing-Box SOCKS5 安装配置成功！"
-    echo "=========================================="
-    echo " 服务名称 : $SERVICE_NAME"
-    echo " 配置文件 : $CONF_FILE"
-    echo "------------------------------------------"
-    echo " IP 地址  : (本机IP)"
-    echo " 端口     : $SOCKS_PORT"
-    echo " 用户名   : $SOCKS_USER"
-    echo " 密码     : $SOCKS_PASS"
-    echo "=========================================="
-else
-    echo "错误: 服务启动失败，请使用 journalctl -u $SERVICE_NAME -xe 查看日志。"
+if ! systemctl is-active --quiet "$SERVICE_NAME"; then
+    echo "错误: 服务启动失败。"
     exit 1
 fi
+
+# =========================================================
+# 6. 获取 IP 并输出信息
+# =========================================================
+echo ">>> 正在获取本机公网 IP (通过 ip.sb)..."
+IPV4=$(curl -s4 https://api-ipv4.ip.sb/ip | tr -d '\n')
+IPV6=$(curl -s6 https://api-ipv6.ip.sb/ip | tr -d '\n')
+
+echo ""
+echo "########################################################"
+echo "           Sing-Box SOCKS5 部署成功"
+echo "########################################################"
+echo " 服务名称 : $SERVICE_NAME"
+echo " 配置文件 : $CONF_FILE"
+echo "--------------------------------------------------------"
+echo " 用户名   : $SOCKS_USER"
+echo " 密码     : $SOCKS_PASS"
+echo " 端口     : $SOCKS_PORT"
+echo "--------------------------------------------------------"
+echo " [链接格式]"
+
+if [ -n "$IPV4" ]; then
+    echo ""
+    echo " IPv4 地址: $IPV4"
+    echo " SOCKS5链接: socks5://$SOCKS_USER:$SOCKS_PASS@$IPV4:$SOCKS_PORT"
+else
+    echo " IPv4 地址: 未检测到"
+fi
+
+if [ -n "$IPV6" ]; then
+    echo ""
+    echo " IPv6 地址: $IPV6"
+    # IPv6 在 URL 中需要加方括号 []
+    echo " SOCKS5链接: socks5://$SOCKS_USER:$SOCKS_PASS@[$IPV6]:$SOCKS_PORT"
+else
+    echo " IPv6 地址: 未检测到"
+fi
+
+echo "########################################################"
