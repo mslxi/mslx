@@ -5,6 +5,9 @@ red() { echo -e "\033[31m$1\033[0m"; }
 green() { echo -e "\033[32m$1\033[0m"; }
 yellow() { echo -e "\033[33m$1\033[0m"; }
 
+# 全局变量
+IS_CHINA=false
+
 # 检查是否为root用户
 check_root() {
     if [[ $EUID -ne 0 ]]; then
@@ -12,6 +15,29 @@ check_root() {
         SUDO_CMD="sudo"
     else
         SUDO_CMD=""
+    fi
+}
+
+# 检查地区
+check_region() {
+    yellow "正在检测网络环境..."
+    
+    # 尝试多种方式检测是否在中国大陆
+    
+    # 方法1: 通过 Cloudflare Trace (通常较快且准确)
+    if curl -s --connect-timeout 3 https://www.cloudflare.com/cdn-cgi/trace | grep -q "loc=CN"; then
+        IS_CHINA=true
+    # 方法2: 通过连通性测试 (Google vs Baidu)
+    elif ! curl -s --connect-timeout 3 https://www.google.com >/dev/null 2>&1; then
+        if curl -s --connect-timeout 3 https://www.baidu.com >/dev/null 2>&1; then
+            IS_CHINA=true
+        fi
+    fi
+
+    if [[ "$IS_CHINA" == "true" ]]; then
+        green "检测到中国大陆环境，将使用国内镜像源加速下载"
+    else
+        green "检测到海外环境，将使用官方源"
     fi
 }
 
@@ -72,25 +98,37 @@ install_oh_my_zsh() {
     
     yellow "正在安装 Oh My Zsh..."
     
-    # 尝试多个下载源
-    local install_urls=(
-        "https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh"
-        "https://cdn.jsdelivr.net/gh/ohmyzsh/ohmyzsh@master/tools/install.sh"
-        "https://gitee.com/pocmon/ohmyzsh/raw/master/tools/install.sh"
-    )
-    
-    for url in "${install_urls[@]}"; do
-        yellow "尝试从 $url 下载..."
-        if sh -c "$(curl -fsSL $url)" "" --unattended 2>/dev/null; then
-            green "Oh My Zsh 安装成功"
-            return 0
-        elif sh -c "$(wget -O- $url)" "" --unattended 2>/dev/null; then
+    if [[ "$IS_CHINA" == "true" ]]; then
+        # 大陆环境配置
+        # 设置 REMOTE 环境变量，Oh My Zsh 官方安装脚本支持此变量来自定义仓库地址
+        export REMOTE="https://gitee.com/mirrors/oh-my-zsh.git"
+        
+        # 尝试使用 Gitee 上的安装脚本镜像 (通常与官方保持同步)
+        # 或者使用 jsdelivr 加速的 GitHub 文件
+        local install_urls=(
+            "https://gitee.com/mirrors/oh-my-zsh/raw/master/tools/install.sh"
+            "https://cdn.jsdelivr.net/gh/ohmyzsh/ohmyzsh@master/tools/install.sh"
+        )
+        
+        for url in "${install_urls[@]}"; do
+            yellow "尝试从镜像源下载安装脚本: $url"
+            # 注意: 这里需要确保 REMOTE 变量在 sh 进程中生效
+            if curl -fsSL "$url" | sh -s -- --unattended >/dev/null 2>&1; then
+                green "Oh My Zsh 安装成功 (使用国内镜像)"
+                return 0
+            fi
+        done
+    else
+        # 海外环境配置
+        local url="https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh"
+        yellow "尝试从官方源下载..."
+        if curl -fsSL "$url" | sh -s -- --unattended >/dev/null 2>&1; then
             green "Oh My Zsh 安装成功"
             return 0
         fi
-    done
+    fi
     
-    red "错误: Oh My Zsh 安装失败"
+    red "错误: Oh My Zsh 安装失败，请检查网络连接"
     return 1
 }
 
@@ -117,7 +155,7 @@ set_default_shell() {
         if chsh -s "$zsh_path" 2>/dev/null; then
             green "默认Shell设置成功，请重新登录或执行 'exec zsh' 生效"
         else
-            # 如果chsh失败，尝试使用sudo
+            # 如果chsh失败，尝试使用sudo (针对当前用户)
             if $SUDO_CMD chsh -s "$zsh_path" "$USER" 2>/dev/null; then
                 green "默认Shell设置成功，请重新登录或执行 'exec zsh' 生效"
             else
@@ -154,18 +192,31 @@ configure_zsh() {
     # 创建插件目录
     mkdir -p "$plugins_dir"
     
-    # 插件列表和对应的GitHub仓库
-    declare -A plugins=(
-        ["zsh-syntax-highlighting"]="https://github.com/zsh-users/zsh-syntax-highlighting.git"
-        ["zsh-autosuggestions"]="https://github.com/zsh-users/zsh-autosuggestions.git"
-    )
+    # 插件列表和对应的仓库地址
+    declare -A plugins
+    
+    if [[ "$IS_CHINA" == "true" ]]; then
+        # 国内使用 Gitee 镜像
+        plugins=(
+            ["zsh-syntax-highlighting"]="https://gitee.com/mirrors/zsh-syntax-highlighting.git"
+            ["zsh-autosuggestions"]="https://gitee.com/mirrors/zsh-autosuggestions.git"
+        )
+    else
+        # 官方源
+        plugins=(
+            ["zsh-syntax-highlighting"]="https://github.com/zsh-users/zsh-syntax-highlighting.git"
+            ["zsh-autosuggestions"]="https://github.com/zsh-users/zsh-autosuggestions.git"
+        )
+    fi
     
     # 安装插件
     for plugin in "${!plugins[@]}"; do
         local plugin_dir="${plugins_dir}/${plugin}"
+        local repo_url="${plugins[$plugin]}"
+        
         if [[ ! -d "$plugin_dir" ]]; then
-            yellow "正在安装插件: $plugin"
-            if git clone "${plugins[$plugin]}" "$plugin_dir" 2>/dev/null; then
+            yellow "正在安装插件: $plugin (源: $repo_url)"
+            if git clone "$repo_url" "$plugin_dir" 2>/dev/null; then
                 green "插件 $plugin 安装成功"
             else
                 red "插件 $plugin 安装失败"
@@ -203,6 +254,9 @@ main() {
     green "开始配置zsh环境..."
     
     check_root
+    
+    # 检测地区
+    check_region
     
     # 安装依赖
     install_dependencies
